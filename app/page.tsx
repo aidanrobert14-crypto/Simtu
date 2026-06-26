@@ -47,6 +47,8 @@ import {
   Clock,
   PlusCircle,
   UserPlus,
+  Palette,
+  ChevronDown,
 } from "lucide-react";
 
 // --- MOCK DATA & CONFIGURATION ---
@@ -61,6 +63,7 @@ const THEMES = {
     borderLight: "border-indigo-100",
     border: "border-indigo-600",
     shadow: "shadow-indigo-100",
+    appBg: "bg-gradient-to-br from-slate-50 via-indigo-50/50 to-slate-100",
   },
   emerald: {
     primary: "bg-emerald-600",
@@ -71,6 +74,7 @@ const THEMES = {
     borderLight: "border-emerald-100",
     border: "border-emerald-600",
     shadow: "shadow-emerald-100",
+    appBg: "bg-gradient-to-br from-slate-50 via-emerald-50/50 to-slate-100",
   },
   slate: {
     primary: "bg-slate-900",
@@ -81,6 +85,7 @@ const THEMES = {
     borderLight: "border-slate-200",
     border: "border-slate-900",
     shadow: "shadow-slate-100",
+    appBg: "bg-gradient-to-br from-slate-50 via-slate-100/50 to-slate-200/50",
   },
   amber: {
     primary: "bg-amber-600",
@@ -91,6 +96,73 @@ const THEMES = {
     borderLight: "border-amber-100",
     border: "border-amber-600",
     shadow: "shadow-amber-100",
+    appBg: "bg-gradient-to-br from-slate-50 via-amber-50/50 to-slate-100",
+  },
+  rose: {
+    primary: "bg-rose-600",
+    hover: "hover:bg-rose-700",
+    text: "text-rose-700",
+    textLight: "text-rose-600",
+    bgLight: "bg-rose-50",
+    borderLight: "border-rose-100",
+    border: "border-rose-600",
+    shadow: "shadow-rose-100",
+    appBg: "bg-gradient-to-br from-slate-50 via-rose-50/50 to-slate-100",
+  },
+  sky: {
+    primary: "bg-sky-600",
+    hover: "hover:bg-sky-700",
+    text: "text-sky-700",
+    textLight: "text-sky-600",
+    bgLight: "bg-sky-50",
+    borderLight: "border-sky-100",
+    border: "border-sky-600",
+    shadow: "shadow-sky-100",
+    appBg: "bg-gradient-to-br from-slate-50 via-sky-50/50 to-slate-100",
+  },
+  teal: {
+    primary: "bg-teal-600",
+    hover: "hover:bg-teal-700",
+    text: "text-teal-700",
+    textLight: "text-teal-600",
+    bgLight: "bg-teal-50",
+    borderLight: "border-teal-100",
+    border: "border-teal-600",
+    shadow: "shadow-teal-100",
+    appBg: "bg-gradient-to-br from-slate-50 via-teal-50/50 to-slate-100",
+  },
+  violet: {
+    primary: "bg-violet-600",
+    hover: "hover:bg-violet-700",
+    text: "text-violet-700",
+    textLight: "text-violet-600",
+    bgLight: "bg-violet-50",
+    borderLight: "border-violet-100",
+    border: "border-violet-600",
+    shadow: "shadow-violet-100",
+    appBg: "bg-gradient-to-br from-slate-50 via-violet-50/50 to-slate-100",
+  },
+  red: {
+    primary: "bg-red-600",
+    hover: "hover:bg-red-700",
+    text: "text-red-700",
+    textLight: "text-red-600",
+    bgLight: "bg-red-50",
+    borderLight: "border-red-100",
+    border: "border-red-600",
+    shadow: "shadow-red-100",
+    appBg: "bg-gradient-to-br from-slate-50 via-red-50/50 to-slate-100",
+  },
+  pink: {
+    primary: "bg-pink-600",
+    hover: "hover:bg-pink-700",
+    text: "text-pink-700",
+    textLight: "text-pink-600",
+    bgLight: "bg-pink-50",
+    borderLight: "border-pink-100",
+    border: "border-pink-600",
+    shadow: "shadow-pink-100",
+    appBg: "bg-gradient-to-br from-slate-50 via-pink-50/50 to-slate-100",
   },
 };
 
@@ -1242,16 +1314,16 @@ const DashboardCard = ({
   trend,
   colorClass,
 }: any) => (
-  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative">
-    <div className="absolute top-5 right-5 text-slate-300">
+  <div className="bg-white/60 backdrop-blur-xl p-6 rounded-2xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow">
+    <div className={`absolute top-6 right-6 ${colorClass} w-10 h-10 rounded-xl flex items-center justify-center`}>
       <Icon className="w-5 h-5" />
     </div>
-    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
       {title}
     </p>
-    <p className="text-2xl font-bold text-slate-900">{value}</p>
+    <p className="text-3xl font-extrabold text-slate-800 drop-shadow-sm">{value}</p>
     {trend && (
-      <div className="mt-2 text-[10px] text-emerald-600 font-bold">{trend}</div>
+      <div className="mt-3 text-[10px] bg-emerald-100/50 text-emerald-700 px-2 py-0.5 rounded-full inline-block font-bold">{trend}</div>
     )}
   </div>
 );
@@ -7202,10 +7274,10 @@ const DashboardView = ({
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/60 backdrop-blur-xl p-6 rounded-3xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         <div>
-          <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Selamat Datang, Admin Utama!</h2>
-          <p className="text-slate-500 text-sm mt-1">
+          <h2 className="text-xl font-extrabold text-slate-900 tracking-tight drop-shadow-sm">Selamat Datang, Admin Utama!</h2>
+          <p className="text-slate-600 text-sm mt-1 font-medium">
             SIM-TATA USAHA — Kelola seluruh administrasi, data kepegawaian, surat menyurat, dan agenda secara real-time.
           </p>
         </div>
@@ -7215,7 +7287,7 @@ const DashboardView = ({
       </div>
 
       {/* Quick Shortcuts */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6">
+      <div className="bg-white/60 backdrop-blur-xl rounded-3xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6">
         <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
           <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
           Pintasan Cepat Dashboard
@@ -7274,14 +7346,14 @@ const DashboardView = ({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Activity */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col">
-          <div className="p-4 border-b border-slate-100 flex justify-between items-center">
-            <h3 className="text-sm font-bold">Aktivitas Terkini</h3>
-            <button className="text-[11px] text-indigo-600 font-bold">
+        <div className="bg-white/60 backdrop-blur-xl rounded-3xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col overflow-hidden">
+          <div className="p-5 border-b border-white/40 flex justify-between items-center bg-white/40">
+            <h3 className="text-sm font-bold text-slate-800">Aktivitas Terkini</h3>
+            <button className={`${activeColors.text} text-[11px] font-bold hover:underline`}>
               Lihat Semua
             </button>
           </div>
-          <div className="p-4 space-y-4 flex-1">
+          <div className="p-5 space-y-4 flex-1">
             {[
               {
                 icon: Mail,
@@ -7324,18 +7396,18 @@ const DashboardView = ({
         </div>
 
         {/* Agenda Mendatang */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col">
-          <div className="p-4 border-b border-slate-100 flex justify-between items-center">
-            <h3 className="text-sm font-bold">Agenda Mendatang</h3>
-            <button className="text-[11px] text-indigo-600 font-bold">
+        <div className="bg-white/60 backdrop-blur-xl rounded-3xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col overflow-hidden">
+          <div className="p-5 border-b border-white/40 flex justify-between items-center bg-white/40">
+            <h3 className="text-sm font-bold text-slate-800">Agenda Mendatang</h3>
+            <button className={`${activeColors.text} text-[11px] font-bold hover:underline`}>
               Lihat Kalender
             </button>
           </div>
-          <div className="p-4 space-y-4 flex-1">
+          <div className="p-5 space-y-4 flex-1">
             {agendaData.map((agenda, idx) => (
               <div
                 key={idx}
-                className="flex gap-3 items-center p-3 rounded-lg border border-slate-100 hover:border-slate-200 hover:bg-slate-50 transition-colors"
+                className="flex gap-3 items-center p-3 rounded-xl border border-white/60 bg-white/40 hover:bg-white/80 transition-colors shadow-sm"
               >
                 <div className={`px-3 py-2 rounded flex flex-col items-center justify-center min-w-[50px] ${activeColors.bgLight} ${activeColors.text} border ${activeColors.borderLight}`}>
                   <p className="text-[10px] font-bold leading-none">
@@ -8168,6 +8240,8 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
+  const [isThemeOpen, setIsThemeOpen] = useState(false);
+  const [themeSearch, setThemeSearch] = useState("");
 
   // Stateful Master Data Store for all 29 categories
   const [masterDataStore, setMasterDataStore] = useState(INITIAL_MASTER_DATA);
@@ -8178,7 +8252,7 @@ export default function App() {
   const [theme, setTheme] = useState(() => {
     if (typeof window !== "undefined") {
       const savedTheme = sessionStorage.getItem("tu_theme");
-      if (savedTheme && ["indigo", "emerald", "slate", "amber"].includes(savedTheme)) {
+      if (savedTheme && ["indigo", "emerald", "slate", "amber", "rose", "sky", "teal", "violet", "red", "pink"].includes(savedTheme)) {
         return savedTheme;
       }
     }
@@ -8810,14 +8884,21 @@ export default function App() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+      <div className={`min-h-screen ${activeColors.appBg} flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-500`}>
+        {/* Decorative elements */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+          <div className={`absolute -top-32 -left-32 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-30 ${activeColors.primary}`}></div>
+          <div className={`absolute top-1/4 right-0 w-80 h-80 rounded-full mix-blend-multiply filter blur-3xl opacity-20 ${activeColors.primary}`}></div>
+          <div className={`absolute -bottom-32 left-1/3 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-30 ${activeColors.primary}`}></div>
+        </div>
+        
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white p-8 md:p-10 rounded-2xl shadow-xl w-full max-w-md border border-slate-100"
+          className="bg-white/80 backdrop-blur-xl p-8 md:p-10 rounded-3xl shadow-2xl w-full max-w-md border border-white/50 relative z-10"
         >
           <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-indigo-600 rounded flex items-center justify-center shadow-inner">
+            <div className={`w-16 h-16 ${activeColors.primary} rounded flex items-center justify-center shadow-inner`}>
               <span className="text-white font-bold text-3xl">TU</span>
             </div>
           </div>
@@ -8830,7 +8911,7 @@ export default function App() {
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
                 PIN Akses
               </label>
               <div className="relative">
@@ -8840,7 +8921,7 @@ export default function App() {
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
                   placeholder="Masukkan 6 digit PIN"
-                  className={`w-full pl-10 pr-4 py-3 border ${error ? "border-red-300 focus:ring-red-500" : "border-slate-200 focus:ring-indigo-500"} rounded text-lg tracking-widest focus:outline-none focus:ring-1 focus:border-indigo-500 bg-slate-50 focus:bg-white transition-colors`}
+                  className={`w-full pl-10 pr-4 py-3 border ${error ? "border-red-300 focus:ring-red-500" : "border-slate-200 focus:ring-slate-400"} rounded-xl text-lg tracking-widest focus:outline-none focus:ring-1 bg-white/50 focus:bg-white transition-colors`}
                   autoFocus
                 />
               </div>
@@ -8853,15 +8934,15 @@ export default function App() {
             </div>
             <button
               type="submit"
-              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded text-sm transition-colors shadow-sm"
+              className={`w-full ${activeColors.primary} ${activeColors.hover} text-white font-bold py-3 rounded-xl text-sm transition-all shadow-md`}
             >
               Masuk Sistem
             </button>
           </form>
-          <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-            <p className="text-xs text-slate-400">
+          <div className="mt-8 pt-6 border-t border-slate-200/50 text-center">
+            <p className="text-xs text-slate-500">
               Gunakan PIN{" "}
-              <span className="font-mono font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+              <span className="font-mono font-bold text-slate-700 bg-white/80 px-2 py-0.5 rounded border border-slate-200">
                 123456
               </span>{" "}
               untuk demo
@@ -8873,17 +8954,24 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex font-sans text-slate-800">
+    <div className={`min-h-screen ${activeColors.appBg} flex font-sans text-slate-800 transition-colors duration-500 relative overflow-hidden`}>
+      {/* Decorative app background elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div className={`absolute -top-64 -left-32 w-[600px] h-[600px] rounded-full mix-blend-multiply filter blur-[100px] opacity-20 ${activeColors.primary}`}></div>
+        <div className={`absolute top-1/3 -right-32 w-[500px] h-[500px] rounded-full mix-blend-multiply filter blur-[100px] opacity-10 ${activeColors.primary}`}></div>
+        <div className={`absolute -bottom-64 left-1/4 w-[800px] h-[800px] rounded-full mix-blend-multiply filter blur-[100px] opacity-15 ${activeColors.primary}`}></div>
+      </div>
+
       {/* Sidebar Desktop */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 lg:translate-x-0 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"} lg:static lg:block flex flex-col shrink-0 h-screen`}
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white/70 backdrop-blur-xl border-r border-white/50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transform transition-transform duration-300 lg:translate-x-0 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"} lg:static lg:block flex flex-col shrink-0 h-screen`}
       >
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+        <div className="p-6 border-b border-slate-200/50 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-indigo-600 rounded flex items-center justify-center text-white font-bold text-lg shadow-sm">
+            <div className={`w-8 h-8 ${activeColors.primary} rounded flex items-center justify-center text-white font-bold text-lg shadow-sm`}>
               TU
             </div>
-            <span className="font-bold text-slate-900 tracking-tight">
+            <span className="font-bold text-slate-900 tracking-tight drop-shadow-sm">
               SIM-TATA USAHA
             </span>
           </div>
@@ -8920,9 +9008,9 @@ export default function App() {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-100 bg-slate-50">
+        <div className="p-4 border-t border-slate-200/50 bg-white/50">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-slate-300 shrink-0 overflow-hidden">
+            <div className="w-10 h-10 rounded-full bg-slate-300 shrink-0 overflow-hidden shadow-inner">
               <img
                 src="https://api.dicebear.com/7.x/notionists/svg?seed=Admin&backgroundColor=f1f5f9"
                 alt="Admin"
@@ -8930,14 +9018,14 @@ export default function App() {
               />
             </div>
             <div className="overflow-hidden flex-1">
-              <p className="text-xs font-bold text-slate-900 truncate">
+              <p className="text-xs font-bold text-slate-900 truncate drop-shadow-sm">
                 Admin Utama
               </p>
               <p className="text-[10px] text-slate-500">Super Admin</p>
             </div>
             <button
               onClick={handleLogout}
-              className="text-slate-400 hover:text-rose-600 p-1 transition-colors"
+              className="text-slate-400 hover:text-rose-600 p-1.5 hover:bg-rose-50 rounded-lg transition-colors"
               title="Keluar"
             >
               <LogOut className="w-4 h-4" />
@@ -8947,56 +9035,107 @@ export default function App() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
+      <main className="flex-1 flex flex-col h-screen overflow-hidden min-w-0 relative z-10">
         {/* Top Header */}
-        <header className="bg-white h-16 border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 shrink-0">
+        <header className="bg-white/70 backdrop-blur-xl h-16 border-b border-white/50 shadow-[0_4px_24px_rgba(0,0,0,0.02)] flex items-center justify-between px-4 sm:px-8 shrink-0">
           <div className="flex items-center">
             <button
-              className="lg:hidden p-2 -ml-2 mr-2 text-slate-500 hover:bg-slate-100 rounded-lg"
+              className="lg:hidden p-2 -ml-2 mr-2 text-slate-500 hover:bg-white/50 rounded-lg"
               onClick={() => setIsMobileMenuOpen(true)}
             >
               <Menu className="w-6 h-6" />
             </button>
-            <h2 className="text-lg font-bold text-slate-800 hidden sm:block">
+            <h2 className="text-lg font-bold text-slate-800 hidden sm:block drop-shadow-sm">
               {MENU_ITEMS.find((m) => m.id === activeTab)?.label}
             </h2>
           </div>
-          <div className="flex items-center gap-4 sm:gap-6">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <button className="relative text-slate-400 hover:text-slate-600 transition-colors p-2">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full border border-white"></span>
+            </button>
+
+            {/* Theme selector popup */}
+            <div className="relative">
+              <button 
+                onClick={() => setIsThemeOpen(!isThemeOpen)}
+                className={`p-2 rounded-lg transition-colors cursor-pointer ${isThemeOpen ? 'bg-slate-100 text-slate-800' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'}`}
+                title="Pilih Tema UI"
+              >
+                <Palette className="w-5 h-5" />
+              </button>
+
+              <AnimatePresence>
+                {isThemeOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-2 w-56 sm:w-64 bg-[#1a1f2e] rounded-2xl shadow-xl border border-slate-700/50 overflow-hidden z-50 p-2"
+                  >
+                    <div className="px-3 py-2 text-[10px] font-extrabold text-white/50 uppercase tracking-wider mb-1">
+                      TEMA WARNA UI
+                    </div>
+                    <div className="px-2 mb-2 relative">
+                      <Search className="absolute left-4 top-[9px] w-3.5 h-3.5 text-white/40" />
+                      <input 
+                        type="text" 
+                        placeholder="Cari tema..." 
+                        value={themeSearch}
+                        onChange={(e) => setThemeSearch(e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded-full py-1.5 pl-8 pr-3 text-xs text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-white/30"
+                      />
+                    </div>
+                    <div className="max-h-[260px] overflow-y-auto px-1 pb-1 scrollbar-none">
+                      {[
+                        { id: "slate", label: "Midnight Slate", dot: "bg-slate-500" },
+                        { id: "indigo", label: "Royal Sapphire", dot: "bg-indigo-500" },
+                        { id: "amber", label: "Warm Amber", dot: "bg-amber-500" },
+                        { id: "emerald", label: "Aurora Borealis", dot: "bg-emerald-500" },
+                        { id: "red", label: "Crimson Eclipse", dot: "bg-red-500" },
+                        { id: "violet", label: "Deep Amethyst", dot: "bg-violet-500" },
+                        { id: "sky", label: "Ocean Abyss", dot: "bg-sky-500" },
+                        { id: "pink", label: "Velvet Rose", dot: "bg-pink-500" },
+                      ].filter(t => t.label.toLowerCase().includes(themeSearch.toLowerCase())).map((t) => {
+                        const isActive = theme === t.id;
+                        return (
+                          <button
+                            key={t.id}
+                            onClick={() => {
+                              handleThemeChange(t.id);
+                              setIsThemeOpen(false);
+                            }}
+                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-colors ${isActive ? 'bg-white/10' : 'hover:bg-white/5'}`}
+                          >
+                            <div className={`w-3.5 h-3.5 rounded-full ${t.dot} ${isActive ? 'ring-2 ring-offset-2 ring-offset-[#1a1f2e] ring-white/90' : ''}`}></div>
+                            <span className={`text-xs font-semibold ${isActive ? 'text-white' : 'text-white/60'}`}>{t.label}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             {/* Live date and time */}
-            <div className="hidden lg:block shrink-0">
+            <div className="hidden lg:block shrink-0 pl-2">
               <LiveClock theme={theme} />
             </div>
 
-            {/* Theme selector UI */}
-            <div className="flex items-center gap-1.5 border border-slate-200 bg-slate-50 p-1 rounded-lg shrink-0" title="Pilih Tema UI Halaman Admin">
-              {[
-                { id: "indigo", bg: "bg-indigo-600" },
-                { id: "emerald", bg: "bg-emerald-600" },
-                { id: "slate", bg: "bg-slate-900" },
-                { id: "amber", bg: "bg-amber-500" },
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => handleThemeChange(t.id)}
-                  title={`Tema ${t.id.toUpperCase()}`}
-                  className={`w-4 h-4 rounded-full ${t.bg} cursor-pointer transition-all ${
-                    theme === t.id ? "ring-2 ring-offset-1 ring-slate-400 scale-110" : "opacity-75 hover:opacity-100"
-                  }`}
-                />
-              ))}
-            </div>
-
-            <div className="h-8 w-[1px] bg-slate-200 hidden sm:block"></div>
+            <div className="h-8 w-[1px] bg-slate-200 hidden sm:block mx-2"></div>
             
-            <div className="flex items-center gap-3">
-              <button className="relative text-slate-400 hover:text-slate-600 transition-colors">
-                <Bell className="w-5 h-5" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full border border-white"></span>
-              </button>
-              <button className={`px-4 py-2 ${activeColors.primary} ${activeColors.hover} text-white text-xs font-bold rounded shadow-xs transition-all cursor-pointer`}>
-                Laporan Baru
-              </button>
+            {/* Admin Account */}
+            <div className="flex items-center gap-2.5 cursor-pointer hover:bg-slate-50 p-1.5 rounded-xl transition-colors">
+              <div className="text-right hidden sm:block">
+                <p className="text-xs font-extrabold text-slate-800">Admin Utama</p>
+                <p className="text-[10px] text-slate-500 font-medium">admin@simtu.id</p>
+              </div>
+              <div className={`w-8 h-8 rounded-full ${activeColors.primary} text-white flex items-center justify-center font-bold text-xs shadow-xs`}>
+                AD
+              </div>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden sm:block" />
             </div>
           </div>
         </header>
