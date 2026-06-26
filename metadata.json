@@ -1,0 +1,6 @@
+{
+  "name": "Sistem Informasi Tata Usaha",
+  "description": "Sistem informasi manajemen tata usaha dengan fitur dashboard, data pegawai, persuratan, dan arsip.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
