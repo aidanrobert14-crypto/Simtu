@@ -8242,6 +8242,13 @@ export default function App() {
   const [isChecking, setIsChecking] = useState(true);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [themeSearch, setThemeSearch] = useState("");
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [selectedSubItem, setSelectedSubItem] = useState<any>(null);
+  const [feedbackForm, setFeedbackForm] = useState({ name: "", email: "", message: "" });
+  const [feedbackSent, setFeedbackSent] = useState(false);
+  const [landingSearch, setLandingSearch] = useState("");
+  const [landingDropdown, setLandingDropdown] = useState<string | null>(null);
+  const [isLandingMobileMenuOpen, setIsLandingMobileMenuOpen] = useState(false);
 
   // Stateful Master Data Store for all 29 categories
   const [masterDataStore, setMasterDataStore] = useState(INITIAL_MASTER_DATA);
@@ -8883,72 +8890,1218 @@ export default function App() {
   if (isChecking) return null;
 
   if (!isAuthenticated) {
-    return (
-      <div className={`min-h-screen ${activeColors.appBg} flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-500`}>
-        {/* Decorative elements */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-          <div className={`absolute -top-32 -left-32 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-30 ${activeColors.primary}`}></div>
-          <div className={`absolute top-1/4 right-0 w-80 h-80 rounded-full mix-blend-multiply filter blur-3xl opacity-20 ${activeColors.primary}`}></div>
-          <div className={`absolute -bottom-32 left-1/3 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-30 ${activeColors.primary}`}></div>
-        </div>
-        
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-white/80 backdrop-blur-xl p-8 md:p-10 rounded-3xl shadow-2xl w-full max-w-md border border-white/50 relative z-10"
-        >
-          <div className="flex justify-center mb-6">
-            <div className={`w-16 h-16 ${activeColors.primary} rounded flex items-center justify-center shadow-inner`}>
-              <span className="text-white font-bold text-3xl">TU</span>
-            </div>
-          </div>
-          <h1 className="text-2xl font-bold text-center text-slate-900 tracking-tight mb-2">
-            SIM-TATA USAHA
-          </h1>
-          <p className="text-center text-slate-500 mb-8 text-sm">
-            Masuk untuk mengelola administrasi instansi
-          </p>
+    const PROFIL_ITEMS = [
+      { id: "visi_misi", label: "Visi & Misi Instansi", subtitle: "Arah dan strategi utama" },
+      { id: "struktur", label: "Struktur Organisasi", subtitle: "Bagan pimpinan dan staf" },
+      { id: "tupoksi", label: "Tugas Pokok & Fungsi", subtitle: "Tupoksi unit kerja" }
+    ];
 
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-                PIN Akses
-              </label>
-              <div className="relative">
-                <Lock className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="password"
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value)}
-                  placeholder="Masukkan 6 digit PIN"
-                  className={`w-full pl-10 pr-4 py-3 border ${error ? "border-red-300 focus:ring-red-500" : "border-slate-200 focus:ring-slate-400"} rounded-xl text-lg tracking-widest focus:outline-none focus:ring-1 bg-white/50 focus:bg-white transition-colors`}
-                  autoFocus
-                />
+    const BERITA_ITEMS = [
+      { id: "digitalisasi", label: "Digitalisasi Arsip Surat Nasional", subtitle: "Program terpadu kearsipan" },
+      { id: "pelatihan", label: "Pelatihan Kompetensi Pegawai", subtitle: "Peningkatan mutu SDM" },
+      { id: "evaluasi", label: "Rapat Evaluasi Kinerja Semester I", subtitle: "Laporan capaian & target" }
+    ];
+
+    const PELAYANAN_ITEMS = [
+      { id: "layanan_surat", label: "Layanan Persuratan Masuk/Keluar", subtitle: "Penerimaan & disposisi naskah" },
+      { id: "layanan_pegawai", label: "Manajemen Kenaikan Pangkat", subtitle: "Layanan karier & berkas" },
+      { id: "layanan_arsip", label: "Akses Arsip Digital SK", subtitle: "Repositori resmi dinas" }
+    ];
+
+    const INFORMASI_ITEMS = [
+      { id: "sop", label: "SOP Pelayanan Administrasi", subtitle: "Alur standardisasi kerja" },
+      { id: "formulir", label: "Unduh Formulir Pengajuan Cuti", subtitle: "Formulir kepegawaian baku", actionType: "download" },
+      { id: "panduan", label: "Panduan Penggunaan SIM-TATA USAHA", subtitle: "Buku panduan operasional", actionType: "download" }
+    ];
+
+    const getSubItemDetails = (id: string) => {
+      switch (id) {
+        case "visi_misi":
+          return {
+            title: "Visi & Misi Instansi",
+            subtitle: "Arah dan Strategi Utama Unit Tata Usaha",
+            icon: Shield,
+            content: "Menjadi pusat pelayanan administrasi tata usaha yang modern, transparan, cepat, andal, dan ramah lingkungan melalui optimalisasi digitalisasi tata kelola persuratan dan kearsipan nasional.",
+            details: [
+              "Digitalisasi 100% berkas surat masuk, keluar, dan arsip digital secara berkala dan aman.",
+              "Menyediakan sistem disposisi digital instan guna mempercepat koordinasi dengan pimpinan.",
+              "Membina karier dan kompetensi profesional seluruh staf tata usaha secara merdeka dan berkelanjutan.",
+              "Menjamin kerahasiaan dan integritas data rahasia instansi."
+            ]
+          };
+        case "struktur":
+          return {
+            title: "Struktur Organisasi",
+            subtitle: "Bagan Pejabat & Staf Tata Usaha",
+            icon: Users,
+            content: "Kepengurusan unit kerja Tata Usaha terstruktur rapi untuk memastikan setiap fungsi administrasi dan pelayanan internal dapat berjalan dengan presisi dan akuntabel.",
+            details: [
+              "Kepala Sub Bagian Tata Usaha — Drs. H. Ahmad Fauzi, M.Si",
+              "Koordinator Kepegawaian & Diklat — Sri Wahyuni, S.Sos",
+              "Koordinator Persuratan & Kearsipan — Dian Lestari, A.Md",
+              "Koordinator Keuangan & Perencanaan — Rahmawati, S.E.",
+              "Staf Perlengkapan & Umum — Budi Santoso, S.T."
+            ]
+          };
+        case "tupoksi":
+          return {
+            title: "Tugas Pokok & Fungsi (Tupoksi)",
+            subtitle: "Pedoman Kerja Operasional",
+            icon: Briefcase,
+            content: "Berdasarkan regulasi resmi, subbagian Tata Usaha bertugas mengoordinasikan perumusan rencana kegiatan, administrasi umum, perlengkapan, persuratan, pengumpulan dokumen, serta evaluasi pelaporan di lingkungan kerja instansi.",
+            details: [
+              "Pelayanan surat menyurat: penomoran, pencatatan, dan pendistribusian surat masuk/keluar.",
+              "Pelayanan kepegawaian: berkas pangkat, gaji berkala, mutasi, cuti, dan kesejahteraan pegawai.",
+              "Pengelolaan kearsipan: penataan arsip dinamis, vital, dan inaktif secara tertib.",
+              "Penyusunan anggaran belanja, laporan keuangan, dan pertanggungjawaban operasional."
+            ]
+          };
+        case "digitalisasi":
+          return {
+            title: "Digitalisasi Arsip Surat Nasional",
+            subtitle: "Berita Utama — 25 Juni 2026",
+            icon: Archive,
+            content: "Dalam rangka menyambut era digitalisasi terpadu, unit Tata Usaha telah mencanangkan program digitalisasi total arsip bersejarah sejak tahun 2010. Proses scan dan entry dokumen vital ditargetkan rampung akhir tahun ini guna menghindari hilangnya dokumen fisik.",
+            details: [
+              "Mencegah kertas lapuk dan robek karena faktor cuaca.",
+              "Mempermudah pencarian arsip lama hanya dalam hitungan detik.",
+              "Penyimpanan terpusat pada server cloud berkeamanan tinggi."
+            ]
+          };
+        case "pelatihan":
+          return {
+            title: "Pelatihan Kompetensi Kepegawaian",
+            subtitle: "Warta Humas — 20 Juni 2026",
+            icon: GraduationCap,
+            content: "Guna membekali para staf dengan teknologi administrasi teranyar, unit Tata Usaha menyelenggarakan bimbingan teknis (Bimtek) intensif mengenai pengelolaan database kepegawaian digital dan pemrosesan disposisi naskah dinas elektronik.",
+            details: [
+              "Diikuti oleh seluruh staf administrasi tata usaha.",
+              "Fokus pada efisiensi kerja dan proteksi data pribadi pegawai.",
+              "Narasumber berpengalaman di bidang e-government."
+            ]
+          };
+        case "evaluasi":
+          return {
+            title: "Rapat Evaluasi Kinerja Semester I",
+            subtitle: "Agenda Internal — 18 Juni 2026",
+            icon: FileCheck,
+            content: "Rapat rutin pleno tengah tahun melaporkan pencapaian membanggakan, di mana waktu pemrosesan dokumen resmi mengalami penurunan rata-rata dari 2 hari menjadi hanya 10 menit berkat implementasi sistem disposisi digital real-time.",
+            details: [
+              "Kecepatan pelayanan meningkat drastis hingga 85%.",
+              "Tingkat kepuasan layanan internal mencapai indeks 4.8 / 5.0.",
+              "Target semester berikutnya: otomatisasi pengunduhan berkas mandiri bagi pegawai."
+            ]
+          };
+        case "layanan_surat":
+          return {
+            title: "Layanan Persuratan Masuk/Keluar",
+            subtitle: "Pelayanan Publik Terintegrasi",
+            icon: Mail,
+            content: "Mempermudah warga, mitra, dan instansi lain mengirimkan surat resmi. Sistem akan menerbitkan nomor urut surat, meregistrasi identitas pengirim, dan mengirimkan disposisi langsung ke meja pimpinan dalam sekejap.",
+            details: [
+              "Pencatatan digital otomatis.",
+              "Penerbitan nomor surat keluar secara realtime.",
+              "Notifikasi disposisi langsung ke pimpinan terkait."
+            ]
+          };
+        case "layanan_pegawai":
+          return {
+            title: "Manajemen Kenaikan Pangkat & Karier",
+            subtitle: "Pelayanan Administrasi Pegawai",
+            icon: UserPlus,
+            content: "Layanan mandiri bagi pegawai untuk memeriksa kelayakan kenaikan pangkat golongan, pengajuan cuti tahunan, pengumpulan berkas kenaikan gaji berkala (KGB), sertifikat diklat, dan surat keputusan jabatan.",
+            details: [
+              "Proses monitoring masa kerja yang transparan.",
+              "Pengajuan cuti online yang langsung terintegrasi ke kalender agenda.",
+              "Notifikasi dini sebelum masa kenaikan pangkat tiba."
+            ]
+          };
+        case "layanan_arsip":
+          return {
+            title: "Akses Arsip Digital SK",
+            subtitle: "Pusat Dokumen Resmi Instansi",
+            icon: FileText,
+            content: "Sebagai salah satu pilar administrasi, seluruh Surat Keputusan (SK) pimpinan diarsipkan secara digital dengan format PDF terenkripsi dan dapat dicari berdasarkan kata kunci, tanggal, nomor surat, maupun kategori urusan.",
+            details: [
+              "Akses eksklusif bagi pejabat berwenang.",
+              "Proteksi pencurian data naskah dinas resmi.",
+              "Backup data berkala di server lokal dan cloud secara simultan."
+            ]
+          };
+        case "sop":
+          return {
+            title: "SOP Pelayanan Administrasi",
+            subtitle: "Informasi Publik & Tata Tertib",
+            icon: CheckCircle2,
+            content: "Standard Operational Procedure (SOP) mengatur secara ketat alur kerja agar terjamin konsistensi layanan. Mulai dari penanganan surat rahasia, penerbitan surat tugas pimpinan, hingga penanganan komplain pelayanan publik.",
+            details: [
+              "Surat masuk harus dicatat di sistem dalam waktu maksimal 10 menit sejak diterima fisik.",
+              "Surat dinas keluar wajib ditandatangani secara resmi.",
+              "Arsip inaktif wajib dipindahkan ke depo arsip setelah masa retensi."
+            ]
+          };
+        case "formulir":
+          return {
+            title: "Unduh Formulir Pengajuan Cuti",
+            subtitle: "Berkas Administrasi — Unduhan Berhasil",
+            icon: FileText,
+            content: "Formulir ini digunakan untuk pengajuan permohonan cuti tahunan, cuti melahirkan, cuti alasan penting, maupun cuti di luar tanggungan negara. Isi formulir secara lengkap, mintalah persetujuan atasan langsung, dan serahkan ke unit kepegawaian.",
+            details: [
+              "Format Berkas: PDF / MS Word (.docx)",
+              "Ukuran Berkas: 245 KB",
+              "Status: Berkas Siap Diunduh"
+            ],
+            actionType: "download"
+          };
+        case "panduan":
+          return {
+            title: "Panduan Penggunaan SIM-TATA USAHA",
+            subtitle: "Dokumen Panduan — Unduhan Berhasil",
+            icon: FileText,
+            content: "Buku panduan teknis bagi admin, operator, dan pimpinan untuk memaksimalkan seluruh fitur aplikasi SIM-TATA USAHA. Berisi penjelasan rinci disertai gambar langkah-demi-langkah pendaftaran pegawai, mutasi, pencatatan surat, dan peninjauan laporan.",
+            details: [
+              "Format Berkas: PDF (E-Book)",
+              "Ukuran Berkas: 3.4 MB",
+              "Versi Panduan: v1.2 (Terbaru)"
+            ],
+            actionType: "download"
+          };
+        default:
+          return null;
+      }
+    };
+
+    const handleLandingFeedbackSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!feedbackForm.name || !feedbackForm.email || !feedbackForm.message) {
+        alert("Mohon lengkapi semua isian formulir hubungi kami.");
+        return;
+      }
+      setFeedbackSent(true);
+      setTimeout(() => {
+        setFeedbackSent(false);
+        setFeedbackForm({ name: "", email: "", message: "" });
+        alert("Pesan Anda berhasil terkirim ke unit Tata Usaha! Terima kasih.");
+      }, 1000);
+    };
+
+    return (
+      <div className={`min-h-screen ${activeColors.appBg} flex flex-col font-sans text-slate-800 transition-colors duration-500 relative overflow-x-hidden selection:bg-slate-200`}>
+        {/* Decorative background lights */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+          <div className={`absolute -top-32 -left-32 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 ${activeColors.primary}`}></div>
+          <div className={`absolute top-1/4 -right-32 w-80 h-80 rounded-full mix-blend-multiply filter blur-3xl opacity-15 ${activeColors.primary}`}></div>
+          <div className={`absolute bottom-32 left-1/3 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 ${activeColors.primary}`}></div>
+        </div>
+
+        {/* TOP NAVBAR */}
+        <header className="bg-white/80 backdrop-blur-xl sticky top-0 z-40 border-b border-slate-200/50 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.03)] transition-all">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
+            {/* Logo and Brand */}
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+              <div className={`w-9 h-9 sm:w-11 sm:h-11 ${activeColors.primary} rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-100`}>
+                <Building2 className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              {error && (
-                <p className="text-red-500 text-xs font-medium mt-2 flex items-center">
-                  <X className="w-3 h-3 mr-1" />
-                  {error}
-                </p>
-              )}
+              <div>
+                <h1 className="text-sm sm:text-base font-extrabold text-slate-950 tracking-tight leading-none">SIM-TATA USAHA</h1>
+                <p className="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-0.5 sm:mt-1">Portal Pelayanan Publik</p>
+              </div>
             </div>
-            <button
-              type="submit"
-              className={`w-full ${activeColors.primary} ${activeColors.hover} text-white font-bold py-3 rounded-xl text-sm transition-all shadow-md`}
-            >
-              Masuk Sistem
-            </button>
-          </form>
-          <div className="mt-8 pt-6 border-t border-slate-200/50 text-center">
-            <p className="text-xs text-slate-500">
-              Gunakan PIN{" "}
-              <span className="font-mono font-bold text-slate-700 bg-white/80 px-2 py-0.5 rounded border border-slate-200">
-                123456
-              </span>{" "}
-              untuk demo
-            </p>
+
+            {/* Navigation Menus matching user image */}
+            <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
+              <button 
+                onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setLandingDropdown(null); }}
+                className="px-3 py-2 text-xs font-bold text-slate-700 hover:text-slate-900 transition-colors uppercase tracking-wider"
+              >
+                HOME
+              </button>
+
+              {/* PROFIL Dropdown */}
+              <div className="relative">
+                <button 
+                  onClick={() => setLandingDropdown(landingDropdown === "profil" ? null : "profil")}
+                  className={`px-3 py-2 text-xs font-bold text-slate-700 hover:text-slate-900 transition-colors uppercase tracking-wider flex items-center gap-1 cursor-pointer ${landingDropdown === "profil" ? "text-indigo-600 bg-slate-50 rounded-lg" : ""}`}
+                >
+                  PROFIL <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+                </button>
+                <AnimatePresence>
+                  {landingDropdown === "profil" && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute left-0 mt-2 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50"
+                    >
+                      {PROFIL_ITEMS.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setSelectedSubItem(getSubItemDetails(item.id));
+                            setLandingDropdown(null);
+                          }}
+                          className="w-full text-left p-2.5 hover:bg-slate-50 rounded-xl transition-colors flex flex-col cursor-pointer"
+                        >
+                          <span className="text-xs font-bold text-slate-800">{item.label}</span>
+                          <span className="text-[10px] text-slate-400 mt-0.5">{item.subtitle}</span>
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* BERITA Dropdown */}
+              <div className="relative">
+                <button 
+                  onClick={() => setLandingDropdown(landingDropdown === "berita" ? null : "berita")}
+                  className={`px-3 py-2 text-xs font-bold text-slate-700 hover:text-slate-900 transition-colors uppercase tracking-wider flex items-center gap-1 cursor-pointer ${landingDropdown === "berita" ? "text-indigo-600 bg-slate-50 rounded-lg" : ""}`}
+                >
+                  BERITA <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+                </button>
+                <AnimatePresence>
+                  {landingDropdown === "berita" && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute left-0 mt-2 w-72 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50"
+                    >
+                      {BERITA_ITEMS.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setSelectedSubItem(getSubItemDetails(item.id));
+                            setLandingDropdown(null);
+                          }}
+                          className="w-full text-left p-2.5 hover:bg-slate-50 rounded-xl transition-colors flex flex-col cursor-pointer"
+                        >
+                          <span className="text-xs font-bold text-slate-800 truncate">{item.label}</span>
+                          <span className="text-[10px] text-slate-400 mt-0.5">{item.subtitle}</span>
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* PELAYANAN Dropdown */}
+              <div className="relative">
+                <button 
+                  onClick={() => setLandingDropdown(landingDropdown === "pelayanan" ? null : "pelayanan")}
+                  className={`px-3 py-2 text-xs font-bold text-slate-700 hover:text-slate-900 transition-colors uppercase tracking-wider flex items-center gap-1 cursor-pointer ${landingDropdown === "pelayanan" ? "text-indigo-600 bg-slate-50 rounded-lg" : ""}`}
+                >
+                  PELAYANAN <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+                </button>
+                <AnimatePresence>
+                  {landingDropdown === "pelayanan" && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute left-0 mt-2 w-72 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50"
+                    >
+                      {PELAYANAN_ITEMS.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setSelectedSubItem(getSubItemDetails(item.id));
+                            setLandingDropdown(null);
+                          }}
+                          className="w-full text-left p-2.5 hover:bg-slate-50 rounded-xl transition-colors flex flex-col cursor-pointer"
+                        >
+                          <span className="text-xs font-bold text-slate-800 truncate">{item.label}</span>
+                          <span className="text-[10px] text-slate-400 mt-0.5">{item.subtitle}</span>
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* INFORMASI Dropdown */}
+              <div className="relative">
+                <button 
+                  onClick={() => setLandingDropdown(landingDropdown === "informasi" ? null : "informasi")}
+                  className={`px-3 py-2 text-xs font-bold text-slate-700 hover:text-slate-900 transition-colors uppercase tracking-wider flex items-center gap-1 cursor-pointer ${landingDropdown === "informasi" ? "text-indigo-600 bg-slate-50 rounded-lg" : ""}`}
+                >
+                  INFORMASI <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+                </button>
+                <AnimatePresence>
+                  {landingDropdown === "informasi" && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute left-0 mt-2 w-72 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50"
+                    >
+                      {INFORMASI_ITEMS.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setSelectedSubItem(getSubItemDetails(item.id));
+                            setLandingDropdown(null);
+                          }}
+                          className="w-full text-left p-2.5 hover:bg-slate-50 rounded-xl transition-colors flex flex-col cursor-pointer"
+                        >
+                          <span className="text-xs font-bold text-slate-800 truncate">{item.label}</span>
+                          <span className="text-[10px] text-slate-400 mt-0.5">{item.subtitle}</span>
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* INOVASI Button */}
+              <button 
+                onClick={() => {
+                  const el = document.getElementById("inovasi-section");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                  setLandingDropdown(null);
+                }}
+                className="px-3 py-2 text-xs font-bold text-slate-700 hover:text-slate-900 transition-colors uppercase tracking-wider"
+              >
+                INOVASI
+              </button>
+
+              {/* KONTAK Button */}
+              <button 
+                onClick={() => {
+                  const el = document.getElementById("kontak-section");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                  setLandingDropdown(null);
+                }}
+                className="px-3 py-2 text-xs font-bold text-slate-700 hover:text-slate-900 transition-colors uppercase tracking-wider"
+              >
+                KONTAK
+              </button>
+            </nav>
+
+            {/* Right Header Side: Palette/Theme selector and Login CTA */}
+            <div className="flex items-center gap-2 sm:gap-4">
+              {/* Palette theme selector directly accessible */}
+              <div className="relative">
+                <button 
+                  onClick={() => setIsThemeOpen(!isThemeOpen)}
+                  className={`p-2 rounded-xl transition-colors cursor-pointer ${isThemeOpen ? 'bg-slate-100 text-slate-800' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'}`}
+                  title="Pilih Tema Warna"
+                >
+                  <Palette className="w-5 h-5 sm:w-6 sm:h-6" />
+                </button>
+
+                <AnimatePresence>
+                  {isThemeOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 top-full mt-2 w-56 sm:w-64 bg-[#1a1f2e] rounded-2xl shadow-xl border border-slate-700/50 overflow-hidden z-50 p-2"
+                    >
+                      <div className="px-3 py-2 text-[10px] font-extrabold text-white/50 uppercase tracking-wider mb-1">
+                        TEMA WARNA UI
+                      </div>
+                      <div className="px-2 mb-2 relative">
+                        <Search className="absolute left-4 top-[9px] w-3.5 h-3.5 text-white/40" />
+                        <input 
+                          type="text" 
+                          placeholder="Cari tema..." 
+                          value={themeSearch}
+                          onChange={(e) => setThemeSearch(e.target.value)}
+                          className="w-full bg-white/5 border border-white/10 rounded-full py-1.5 pl-8 pr-3 text-xs text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-white/30"
+                        />
+                      </div>
+                      <div className="max-h-[260px] overflow-y-auto px-1 pb-1 scrollbar-none">
+                        {[
+                          { id: "slate", label: "Midnight Slate", dot: "bg-slate-500" },
+                          { id: "indigo", label: "Royal Sapphire", dot: "bg-indigo-500" },
+                          { id: "amber", label: "Warm Amber", dot: "bg-amber-500" },
+                          { id: "emerald", label: "Aurora Borealis", dot: "bg-emerald-500" },
+                          { id: "red", label: "Crimson Eclipse", dot: "bg-red-500" },
+                          { id: "violet", label: "Deep Amethyst", dot: "bg-violet-500" },
+                          { id: "sky", label: "Ocean Abyss", dot: "bg-sky-500" },
+                          { id: "pink", label: "Velvet Rose", dot: "bg-pink-500" },
+                        ].filter(t => t.label.toLowerCase().includes(themeSearch.toLowerCase())).map((t) => {
+                          const isActive = theme === t.id;
+                          return (
+                            <button
+                              key={t.id}
+                              onClick={() => {
+                                handleThemeChange(t.id);
+                                setIsThemeOpen(false);
+                              }}
+                              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-colors ${isActive ? 'bg-white/10' : 'hover:bg-white/5'}`}
+                            >
+                              <div className={`w-3.5 h-3.5 rounded-full ${t.dot} ${isActive ? 'ring-2 ring-offset-2 ring-offset-[#1a1f2e] ring-white/90' : ''}`}></div>
+                              <span className={`text-xs font-semibold ${isActive ? 'text-white' : 'text-white/60'}`}>{t.label}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Login Button */}
+              <button
+                onClick={() => setIsLoginModalOpen(true)}
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-white text-xs font-bold cursor-pointer transition-all shadow-md ${activeColors.primary} ${activeColors.hover}`}
+              >
+                <Lock className="w-3.5 h-3.5" />
+                <span>Masuk Admin</span>
+              </button>
+
+              {/* Mobile menu toggle */}
+              <button 
+                onClick={() => setIsLandingMobileMenuOpen(!isLandingMobileMenuOpen)}
+                className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-xl"
+              >
+                <Menu className="w-6 h-6" />
+              </button>
+            </div>
           </div>
-        </motion.div>
+        </header>
+
+        {/* MOBILE SIDE NAVIGATION DRAWER */}
+        <AnimatePresence>
+          {isLandingMobileMenuOpen && (
+            <>
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.5 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsLandingMobileMenuOpen(false)}
+                className="fixed inset-0 bg-black z-40"
+              />
+              <motion.div 
+                initial={{ translateX: "100%" }}
+                animate={{ translateX: 0 }}
+                exit={{ translateX: "100%" }}
+                transition={{ type: "tween", duration: 0.2 }}
+                className="fixed inset-y-0 right-0 w-72 bg-white z-50 shadow-2xl p-6 flex flex-col justify-between overflow-y-auto"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-8">
+                    <span className="font-extrabold text-slate-900 tracking-tight">MENU UTAMA</span>
+                    <button onClick={() => setIsLandingMobileMenuOpen(false)} className="p-1 text-slate-400 hover:text-slate-600">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-6">
+                    {/* Home */}
+                    <button 
+                      onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setIsLandingMobileMenuOpen(false); }}
+                      className="w-full text-left font-bold text-sm text-slate-800 hover:text-indigo-600 block transition-colors border-b border-slate-100 pb-2"
+                    >
+                      HOME
+                    </button>
+
+                    {/* Profil sub items */}
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">PROFIL</p>
+                      {PROFIL_ITEMS.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setSelectedSubItem(getSubItemDetails(item.id));
+                            setIsLandingMobileMenuOpen(false);
+                          }}
+                          className="w-full text-left pl-3 py-1 text-xs font-semibold text-slate-600 hover:text-indigo-600 block"
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Berita sub items */}
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">BERITA</p>
+                      {BERITA_ITEMS.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setSelectedSubItem(getSubItemDetails(item.id));
+                            setIsLandingMobileMenuOpen(false);
+                          }}
+                          className="w-full text-left pl-3 py-1 text-xs font-semibold text-slate-600 hover:text-indigo-600 block"
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Pelayanan sub items */}
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">PELAYANAN</p>
+                      {PELAYANAN_ITEMS.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setSelectedSubItem(getSubItemDetails(item.id));
+                            setIsLandingMobileMenuOpen(false);
+                          }}
+                          className="w-full text-left pl-3 py-1 text-xs font-semibold text-slate-600 hover:text-indigo-600 block"
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Informasi sub items */}
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">INFORMASI</p>
+                      {INFORMASI_ITEMS.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setSelectedSubItem(getSubItemDetails(item.id));
+                            setIsLandingMobileMenuOpen(false);
+                          }}
+                          className="w-full text-left pl-3 py-1 text-xs font-semibold text-slate-600 hover:text-indigo-600 block"
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Inovasi */}
+                    <button 
+                      onClick={() => {
+                        const el = document.getElementById("inovasi-section");
+                        if (el) el.scrollIntoView({ behavior: "smooth" });
+                        setIsLandingMobileMenuOpen(false);
+                      }}
+                      className="w-full text-left font-bold text-sm text-slate-800 hover:text-indigo-600 block transition-colors border-t border-slate-100 pt-3"
+                    >
+                      INOVASI
+                    </button>
+
+                    {/* Kontak */}
+                    <button 
+                      onClick={() => {
+                        const el = document.getElementById("kontak-section");
+                        if (el) el.scrollIntoView({ behavior: "smooth" });
+                        setIsLandingMobileMenuOpen(false);
+                      }}
+                      className="w-full text-left font-bold text-sm text-slate-800 hover:text-indigo-600 block transition-colors border-b border-slate-100 pb-3"
+                    >
+                      KONTAK
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-6 border-t border-slate-100">
+                  <button
+                    onClick={() => {
+                      setIsLoginModalOpen(true);
+                      setIsLandingMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-bold text-xs ${activeColors.primary} ${activeColors.hover} cursor-pointer`}
+                  >
+                    <Lock className="w-4 h-4" />
+                    <span>Masuk Administrasi</span>
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* HERO HEADER SECTION */}
+        <section className="relative pt-12 pb-20 sm:pt-20 sm:pb-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 flex flex-col items-center text-center">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="max-w-3xl"
+          >
+            <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full ${activeColors.bgLight} ${activeColors.text} border ${activeColors.borderLight} text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-6 sm:mb-8 shadow-xs`}>
+              <Zap className="w-3.5 h-3.5 fill-current animate-pulse" />
+              SIM Tata Usaha v1.2 Terintegrasi
+            </div>
+            
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-950 tracking-tight leading-tight drop-shadow-sm mb-6">
+              Sistem Informasi Pelayanan & <span className={`${activeColors.text}`}>Tata Usaha Terpadu</span>
+            </h1>
+            
+            <p className="text-sm sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto mb-8 sm:mb-10 font-medium">
+              Selamat datang di portal pelayanan digital terpadu Tata Usaha. Nikmati kemudahan pengelolaan persuratan masuk/keluar, pencatatan arsip digital, administrasi kepegawaian, dan agenda dinas secara transparan, akuntabel, dan real-time.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+              <button 
+                onClick={() => {
+                  const el = document.getElementById("layanan-utama");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }}
+                className={`w-full sm:w-auto px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-800 rounded-2xl text-sm font-extrabold transition-all border border-slate-200 shadow-sm cursor-pointer hover:shadow-md`}
+              >
+                Pelajari Layanan Kami
+              </button>
+              <button 
+                onClick={() => setIsLoginModalOpen(true)}
+                className={`w-full sm:w-auto px-6 py-3.5 text-white rounded-2xl text-sm font-extrabold transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 ${activeColors.primary} ${activeColors.hover}`}
+              >
+                <Lock className="w-4 h-4" />
+                Akses Dashboard Admin
+              </button>
+            </div>
+          </motion.div>
+        </section>
+
+        {/* SEARCH PUBLIC DIRECTORY */}
+        <section className="relative px-4 max-w-4xl mx-auto w-full z-10 -mt-10 mb-16 sm:mb-24">
+          <div className="bg-white/70 backdrop-blur-xl p-4 sm:p-6 rounded-3xl border border-white/80 shadow-[0_15px_30px_-5px_rgba(0,0,0,0.05)]">
+            <h3 className="text-xs sm:text-sm font-extrabold text-slate-800 uppercase tracking-wider mb-3">Cari Layanan, SOP atau Berita:</h3>
+            <div className="relative">
+              <Search className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+              <input 
+                type="text" 
+                placeholder="Ketik kata kunci (misal: visi, cuti, surat, kgb, pelatihan)..."
+                value={landingSearch}
+                onChange={(e) => setLandingSearch(e.target.value)}
+                className="w-full bg-white/80 border border-slate-200 rounded-2xl py-3 sm:py-4 pl-12 pr-4 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 transition-all shadow-inner"
+              />
+            </div>
+            {landingSearch && (
+              <div className="mt-3 bg-white/90 border border-slate-100 rounded-xl p-2 max-h-48 overflow-y-auto space-y-1">
+                {[
+                  ...PROFIL_ITEMS,
+                  ...BERITA_ITEMS,
+                  ...PELAYANAN_ITEMS,
+                  ...INFORMASI_ITEMS
+                ].filter(item => item.label.toLowerCase().includes(landingSearch.toLowerCase()) || item.subtitle.toLowerCase().includes(landingSearch.toLowerCase()))
+                .map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setSelectedSubItem(getSubItemDetails(item.id));
+                      setLandingSearch("");
+                    }}
+                    className="w-full text-left p-2 hover:bg-slate-50 rounded-lg text-xs font-bold text-slate-700 flex items-center justify-between"
+                  >
+                    <span>{item.label}</span>
+                    <span className="text-[10px] text-slate-400 font-medium">{item.subtitle}</span>
+                  </button>
+                ))}
+                {[
+                  ...PROFIL_ITEMS,
+                  ...BERITA_ITEMS,
+                  ...PELAYANAN_ITEMS,
+                  ...INFORMASI_ITEMS
+                ].filter(item => item.label.toLowerCase().includes(landingSearch.toLowerCase()) || item.subtitle.toLowerCase().includes(landingSearch.toLowerCase())).length === 0 && (
+                  <p className="text-center text-xs text-slate-400 py-2">Tidak ada data publik ditemukan dengan kata kunci tersebut.</p>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* COUNTER & INTERACTIVE STATISTICS BANNER */}
+        <section className="bg-white/40 backdrop-blur-sm border-y border-white/40 py-12 sm:py-16 mb-20 sm:mb-28 z-10 relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+            <div className="text-center">
+              <p className={`text-3xl sm:text-5xl font-black ${activeColors.text} tracking-tight`}>{suratMasukData.length + 342}</p>
+              <p className="text-xs sm:text-sm font-extrabold text-slate-800 mt-2">SURAT TERPROSES</p>
+              <p className="text-[10px] text-slate-500 font-bold mt-1 uppercase tracking-wider">Tahun Berjalan 2026</p>
+            </div>
+            <div className="text-center border-l border-slate-200/50">
+              <p className={`text-3xl sm:text-5xl font-black ${activeColors.text} tracking-tight`}>{pegawaiList.length}</p>
+              <p className="text-xs sm:text-sm font-extrabold text-slate-800 mt-2">PEGAWAI TERDATA</p>
+              <p className="text-[10px] text-slate-500 font-bold mt-1 uppercase tracking-wider">Aparatur Sipil Aktif</p>
+            </div>
+            <div className="text-center border-l border-slate-200/50">
+              <p className={`text-3xl sm:text-5xl font-black ${activeColors.text} tracking-tight`}>{agendaList.length + 18}</p>
+              <p className="text-xs sm:text-sm font-extrabold text-slate-800 mt-2">AGENDA DINAS</p>
+              <p className="text-[10px] text-slate-500 font-bold mt-1 uppercase tracking-wider">Pertemuan Pimpinan</p>
+            </div>
+            <div className="text-center border-l border-slate-200/50">
+              <p className={`text-3xl sm:text-5xl font-black ${activeColors.text} tracking-tight`}>{arsipList.length + 1250}</p>
+              <p className="text-xs sm:text-sm font-extrabold text-slate-800 mt-2">ARSIP DIGITAL</p>
+              <p className="text-[10px] text-slate-500 font-bold mt-1 uppercase tracking-wider">Naskah Dinas Aman</p>
+            </div>
+          </div>
+        </section>
+
+        {/* LAYANAN UTAMA SECTION (PELAYANAN) */}
+        <section id="layanan-utama" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20 sm:mb-28 z-10 relative scroll-mt-24">
+          <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">LAYANAN UNGGULAN</h2>
+            <h3 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-none">Layanan Administrasi Digital Utama</h3>
+            <p className="text-xs sm:text-sm text-slate-500 font-medium mt-3 leading-relaxed">Unit Kerja Tata Usaha memproses segala bentuk dokumen, kenaikan berkas, dan perizinan internal secara transparan.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+            {/* Layanan 1 */}
+            <div className="bg-white/60 backdrop-blur-xl p-6 rounded-3xl border border-white/50 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+              <div>
+                <div className={`w-12 h-12 rounded-2xl ${activeColors.bgLight} ${activeColors.text} flex items-center justify-center mb-6 border ${activeColors.borderLight}`}>
+                  <Mail className="w-6 h-6" />
+                </div>
+                <h4 className="text-lg font-bold text-slate-900 mb-2">Pencatatan Surat Menyurat</h4>
+                <p className="text-xs text-slate-500 leading-relaxed font-medium">Pengarsipan, penomoran otomatis beralur, dan pelacakan surat masuk serta disposisi kepala instansi secara realtime.</p>
+              </div>
+              <button 
+                onClick={() => setSelectedSubItem(getSubItemDetails("layanan_surat"))}
+                className={`mt-6 text-xs font-bold ${activeColors.text} hover:underline flex items-center gap-1 cursor-pointer`}
+              >
+                Pelajari Selengkapnya <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
+
+            {/* Layanan 2 */}
+            <div className="bg-white/60 backdrop-blur-xl p-6 rounded-3xl border border-white/50 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+              <div>
+                <div className={`w-12 h-12 rounded-2xl ${activeColors.bgLight} ${activeColors.text} flex items-center justify-center mb-6 border ${activeColors.borderLight}`}>
+                  <UserPlus className="w-6 h-6" />
+                </div>
+                <h4 className="text-lg font-bold text-slate-900 mb-2">Karier & Mutasi Kepegawaian</h4>
+                <p className="text-xs text-slate-500 leading-relaxed font-medium">Pengumpulan berkas digital Kenaikan Gaji Berkala (KGB), riwayat diklat, permohonan mutasi, dan pengelolaan cuti tahunan pegawai.</p>
+              </div>
+              <button 
+                onClick={() => setSelectedSubItem(getSubItemDetails("layanan_pegawai"))}
+                className={`mt-6 text-xs font-bold ${activeColors.text} hover:underline flex items-center gap-1 cursor-pointer`}
+              >
+                Pelajari Selengkapnya <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
+
+            {/* Layanan 3 */}
+            <div className="bg-white/60 backdrop-blur-xl p-6 rounded-3xl border border-white/50 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+              <div>
+                <div className={`w-12 h-12 rounded-2xl ${activeColors.bgLight} ${activeColors.text} flex items-center justify-center mb-6 border ${activeColors.borderLight}`}>
+                  <Archive className="w-6 h-6" />
+                </div>
+                <h4 className="text-lg font-bold text-slate-900 mb-2">Gudang Arsip Digital SK</h4>
+                <p className="text-xs text-slate-500 leading-relaxed font-medium">Repositori penyimpanan dokumen berizin terenkripsi untuk Surat Keputusan (SK) pejabat dan naskah dinas kenegaraan penting.</p>
+              </div>
+              <button 
+                onClick={() => setSelectedSubItem(getSubItemDetails("layanan_arsip"))}
+                className={`mt-6 text-xs font-bold ${activeColors.text} hover:underline flex items-center gap-1 cursor-pointer`}
+              >
+                Pelajari Selengkapnya <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* NEWS SECTION (BERITA) */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20 sm:mb-28 z-10 relative">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 sm:mb-16">
+            <div className="max-w-xl">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">BERITA TERKINI</h2>
+              <h3 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-none">Warta & Pengumuman Instansi</h3>
+            </div>
+            <button 
+              onClick={() => setSelectedSubItem(getSubItemDetails("digitalisasi"))}
+              className={`mt-4 sm:mt-0 text-xs font-bold ${activeColors.text} hover:underline cursor-pointer`}
+            >
+              Kunjungi Ruang Berita →
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+            <div 
+              onClick={() => setSelectedSubItem(getSubItemDetails("digitalisasi"))}
+              className="bg-white/60 backdrop-blur-xl border border-white/50 rounded-3xl overflow-hidden shadow-sm hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer p-5 flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${activeColors.bgLight} ${activeColors.text} border ${activeColors.borderLight} uppercase`}>Kearsipan</span>
+                  <span className="text-[10px] text-slate-400 font-bold">25 Juni 2026</span>
+                </div>
+                <h4 className="text-base font-extrabold text-slate-900 hover:text-indigo-600 transition-colors mb-2 leading-snug">Digitalisasi Arsip Surat Nasional 2026 Dimulai</h4>
+                <p className="text-xs text-slate-500 leading-relaxed font-medium mb-4">Unit Tata Usaha meresmikan konversi dokumen lama 2010 s.d 2025 ke server digital terenkripsi.</p>
+              </div>
+              <span className={`text-xs font-bold ${activeColors.text} flex items-center gap-1`}>Baca Berita →</span>
+            </div>
+
+            <div 
+              onClick={() => setSelectedSubItem(getSubItemDetails("pelatihan"))}
+              className="bg-white/60 backdrop-blur-xl border border-white/50 rounded-3xl overflow-hidden shadow-sm hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer p-5 flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 uppercase">SDM Unggul</span>
+                  <span className="text-[10px] text-slate-400 font-bold">20 Juni 2026</span>
+                </div>
+                <h4 className="text-base font-extrabold text-slate-900 hover:text-indigo-600 transition-colors mb-2 leading-snug">Pelatihan Aplikasi Tata Usaha Modern bagi Staf</h4>
+                <p className="text-xs text-slate-500 leading-relaxed font-medium mb-4">Bimtek pengelolaan database dinas terpadu guna mewujudkan pelayanan berstandar nasional.</p>
+              </div>
+              <span className={`text-xs font-bold ${activeColors.text} flex items-center gap-1`}>Baca Berita →</span>
+            </div>
+
+            <div 
+              onClick={() => setSelectedSubItem(getSubItemDetails("evaluasi"))}
+              className="bg-white/60 backdrop-blur-xl border border-white/50 rounded-3xl overflow-hidden shadow-sm hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer p-5 flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase">Evaluasi</span>
+                  <span className="text-[10px] text-slate-400 font-bold">18 Juni 2026</span>
+                </div>
+                <h4 className="text-base font-extrabold text-slate-900 hover:text-indigo-600 transition-colors mb-2 leading-snug">Rapat Pleno Semester I: Waktu Proses Turun 85%</h4>
+                <p className="text-xs text-slate-500 leading-relaxed font-medium mb-4">Penerapan sistem disposisi digital mempercepat kelancaran koordinasi dinas secara masif.</p>
+              </div>
+              <span className={`text-xs font-bold ${activeColors.text} flex items-center gap-1`}>Baca Berita →</span>
+            </div>
+          </div>
+        </section>
+
+        {/* INOVASI TECH BAR (INOVASI) */}
+        <section id="inovasi-section" className="bg-slate-950 text-white py-16 sm:py-24 mb-20 sm:mb-28 z-10 relative overflow-hidden scroll-mt-24">
+          <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+            <div className={`absolute -top-32 left-1/3 w-96 h-96 rounded-full filter blur-[120px] opacity-20 bg-indigo-500`}></div>
+            <div className={`absolute -bottom-32 left-10 w-96 h-96 rounded-full filter blur-[120px] opacity-15 bg-emerald-500`}></div>
+          </div>
+
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 sm:gap-16 items-center">
+              <div className="lg:col-span-5">
+                <span className={`inline-block text-[10px] font-extrabold uppercase tracking-widest text-indigo-400 mb-4`}>INOVASI & TEKNOLOGI</span>
+                <h3 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight mb-6">Penerapan Sistem Digital 0% Hambatan Kertas</h3>
+                <p className="text-slate-400 font-medium text-xs sm:text-sm leading-relaxed mb-8">
+                  SIM-TATA USAHA menghadirkan modernisasi administrasi dengan menerapkan kearsipan paperless, integrasi master data kepegawaian yang dinamis, otomatisasi slip pangkat, serta pelaporan statistik performa tata usaha yang real-time dan terjamin keamanannya.
+                </p>
+                <div className="space-y-4">
+                  <div className="flex gap-3 items-start">
+                    <div className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 mt-1">
+                      <Check className="w-3.5 h-3.5" />
+                    </div>
+                    <div>
+                      <p className="text-xs sm:text-sm font-bold text-white">Paperless Kearsipan Digital</p>
+                      <p className="text-[11px] text-slate-400">Penyimpanan naskah dinas dalam format PDF yang aman dari kerusakan fisik.</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 items-start">
+                    <div className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 mt-1">
+                      <Check className="w-3.5 h-3.5" />
+                    </div>
+                    <div>
+                      <p className="text-xs sm:text-sm font-bold text-white">Analisis AI Pintar Terpadu</p>
+                      <p className="text-[11px] text-slate-400">Pengolahan bagan otomatis, peramalan beban surat masuk, dan statistik keaktifan pimpinan.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="bg-white/5 border border-white/10 p-6 rounded-3xl">
+                  <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Inovasi 01</span>
+                  <h4 className="text-lg font-extrabold text-white mt-2 mb-3">Keamanan Enkripsi Dokumen</h4>
+                  <p className="text-[11px] text-slate-400 leading-relaxed font-medium">Setiap file SK dan lampiran yang diunggah ke sistem diproteksi menggunakan enkripsi biner guna melindungi rahasia data instansi dari penyalahgunaan eksternal.</p>
+                </div>
+                <div className="bg-white/5 border border-white/10 p-6 rounded-3xl">
+                  <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Inovasi 02</span>
+                  <h4 className="text-lg font-extrabold text-white mt-2 mb-3">Integrasi Pimpinan</h4>
+                  <p className="text-[11px] text-slate-400 leading-relaxed font-medium">Lembar disposisi pimpinan dapat diterbitkan secara digital dan langsung didistribusikan ke staf pelaksana terkait dalam hitungan detik melalui notifikasi instan.</p>
+                </div>
+                <div className="bg-white/5 border border-white/10 p-6 rounded-3xl">
+                  <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Inovasi 03</span>
+                  <h4 className="text-lg font-extrabold text-white mt-2 mb-3">Sistem Gaji Berkala</h4>
+                  <p className="text-[11px] text-slate-400 leading-relaxed font-medium">Perhitungan masa kerja pangkat golongan serta otomatisasi estimasi waktu pengajuan kenaikan gaji berkala (KGB) yang akurat sesuai pedoman undang-undang kepegawaian.</p>
+                </div>
+                <div className="bg-white/5 border border-white/10 p-6 rounded-3xl">
+                  <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Inovasi 04</span>
+                  <h4 className="text-lg font-extrabold text-white mt-2 mb-3">Manajemen Kontak Cepat</h4>
+                  <p className="text-[11px] text-slate-400 leading-relaxed font-medium">Buku telepon kontak dinas relasi yang terarsip rapi memudahkan sekretariat melakukan korespondensi cepat dengan berbagai kementerian maupun mitra kerja swasta.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* HUBUNGI KAMI SECTION (KONTAK) */}
+        <section id="kontak-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20 sm:mb-32 z-10 relative scroll-mt-24">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 sm:gap-16">
+            {/* Info Kantor */}
+            <div className="lg:col-span-5">
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-500 block mb-2">KONTAK RESMI</span>
+              <h3 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-none mb-6">Hubungi Kantor Tata Usaha</h3>
+              <p className="text-slate-600 font-medium text-xs sm:text-sm leading-relaxed mb-8">
+                Kami siap membantu Anda terkait urusan naskah dinas, legalisasi SK, permohonan informasi publik tata usaha, dan kendala login admin. Silakan kunjungi unit kami atau hubungi kontak resmi di bawah ini.
+              </p>
+
+              <div className="space-y-6">
+                <div className="flex gap-4 items-start">
+                  <div className={`w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0 ${activeColors.text}`}>
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-900">Alamat Kantor Utama</h4>
+                    <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-1">Gedung Administrasi Terpadu Lt. 2, Jl. Merdeka Selatan No. 12, Jakarta Pusat, DKI Jakarta 10110</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 items-start">
+                  <div className={`w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0 ${activeColors.text}`}>
+                    <Phone className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-900">Telepon & Fax</h4>
+                    <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-1">(021) 345-6789 / Fax: (021) 345-6790</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 items-start">
+                  <div className={`w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0 ${activeColors.text}`}>
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-900">Surel / Email Korespondensi</h4>
+                    <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-1">kontak@simtu.id / sekretariat@simtu.id</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Form Hubungi Kami */}
+            <div className="lg:col-span-7">
+              <div className="bg-white/60 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-white/50 shadow-sm">
+                <h4 className="text-lg font-bold text-slate-900 mb-6">Formulir Pengaduan & Layanan</h4>
+                <form onSubmit={handleLandingFeedbackSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Nama Lengkap</label>
+                      <input 
+                        type="text" 
+                        required
+                        value={feedbackForm.name}
+                        onChange={(e) => setFeedbackForm({...feedbackForm, name: e.target.value})}
+                        placeholder="Masukkan nama Anda"
+                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Alamat Email</label>
+                      <input 
+                        type="email" 
+                        required
+                        value={feedbackForm.email}
+                        onChange={(e) => setFeedbackForm({...feedbackForm, email: e.target.value})}
+                        placeholder="Contoh: nama@domain.com"
+                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 transition-all"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Isi Pesan / Pertanyaan</label>
+                    <textarea 
+                      rows={4}
+                      required
+                      value={feedbackForm.message}
+                      onChange={(e) => setFeedbackForm({...feedbackForm, message: e.target.value})}
+                      placeholder="Tuliskan pesan, saran, atau keluhan Anda di sini secara lengkap..."
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 transition-all resize-none"
+                    />
+                  </div>
+                  <button 
+                    type="submit"
+                    disabled={feedbackSent}
+                    className={`w-full py-3 px-4 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer ${feedbackSent ? 'bg-slate-400' : `${activeColors.primary} ${activeColors.hover}`}`}
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>{feedbackSent ? "Sedang Mengirim..." : "Kirim Pesan"}</span>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* PUBLIC PORTAL FOOTER */}
+        <footer className="bg-slate-900 text-white border-t border-slate-800 py-10 sm:py-12 mt-auto relative z-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="text-center sm:text-left">
+              <p className="text-sm font-extrabold text-white">SIM-TATA USAHA</p>
+              <p className="text-[11px] text-slate-400 font-semibold mt-1">Sistem Tata Usaha Terpadu & Digitalisasi Kearsipan Nasional.</p>
+            </div>
+            <div className="text-center sm:text-right">
+              <p className="text-[10px] text-slate-500 font-bold">© 2026 Kantor Tata Usaha Utama. All Rights Reserved.</p>
+              <p className="text-[9px] text-slate-600 font-bold mt-1">Dilindungi oleh Undang-Undang Kearsipan & Hak Cipta Administrasi Negara.</p>
+            </div>
+          </div>
+        </footer>
+
+        {/* FLOATING SUB-ITEM DETAILS MODAL */}
+        <AnimatePresence>
+          {selectedSubItem && (
+            <div className="fixed inset-0 flex items-center justify-center p-4 z-50 overflow-y-auto">
+              {/* Backdrop */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.6 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedSubItem(null)}
+                className="fixed inset-0 bg-black"
+              />
+
+              {/* Modal Body */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                className="bg-white/95 backdrop-blur-xl w-full max-w-lg border border-slate-200 rounded-3xl shadow-2xl relative overflow-hidden z-10"
+              >
+                {/* Header info */}
+                <div className={`p-6 border-b border-slate-100 flex items-start gap-4 ${selectedSubItem.actionType === "download" ? "bg-indigo-50/50" : "bg-slate-50/50"}`}>
+                  <div className={`w-11 h-11 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0 ${activeColors.text} shadow-sm`}>
+                    <selectedSubItem.icon className="w-6 h-6" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-base font-black text-slate-950 truncate">{selectedSubItem.title}</h4>
+                    <p className="text-[11px] text-slate-400 font-extrabold tracking-wide uppercase mt-0.5">{selectedSubItem.subtitle}</p>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedSubItem(null)}
+                    className="p-1 text-slate-400 hover:text-slate-600 bg-white border border-slate-200/50 rounded-xl transition-colors shrink-0"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Content body */}
+                <div className="p-6 space-y-4">
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                    {selectedSubItem.content}
+                  </p>
+
+                  <div className="space-y-2 border-t border-slate-100 pt-4">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Informasi Pendukung & Poin Kunci:</p>
+                    <div className="space-y-1.5">
+                      {selectedSubItem.details.map((detail: string, idx: number) => (
+                        <div key={idx} className="flex gap-2.5 items-start">
+                          <span className={`w-1.5 h-1.5 rounded-full ${activeColors.primary} shrink-0 mt-1.5`}></span>
+                          <span className="text-xs text-slate-700 font-bold">{detail}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer action */}
+                <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
+                  <span className="text-[10px] text-slate-400 font-semibold">Portal Layanan Publik Resmi</span>
+                  <div className="flex gap-2">
+                    {selectedSubItem.actionType === "download" ? (
+                      <button
+                        onClick={() => {
+                          alert(`Unduhan berhasil: ${selectedSubItem.title}. File Anda siap dibuka.`);
+                          setSelectedSubItem(null);
+                        }}
+                        className={`px-4 py-2 rounded-xl text-white text-xs font-bold transition-all shadow-md cursor-pointer ${activeColors.primary} ${activeColors.hover}`}
+                      >
+                        Mulai Unduh File
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setSelectedSubItem(null)}
+                        className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                      >
+                        Tutup Jendela
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* PIN LOGIN MODAL BACKDROP & BOX */}
+        <AnimatePresence>
+          {isLoginModalOpen && (
+            <div className="fixed inset-0 flex items-center justify-center p-4 z-50 overflow-y-auto">
+              {/* Backdrop blur overlay */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.6 }}
+                exit={{ opacity: 0 }}
+                onClick={() => {
+                  setIsLoginModalOpen(false);
+                  setError("");
+                }}
+                className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
+              />
+
+              {/* Login Modal Content */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                className="bg-white/95 backdrop-blur-xl p-8 md:p-10 rounded-3xl shadow-2xl w-full max-w-md border border-white/50 relative z-10"
+              >
+                {/* Close Button */}
+                <button 
+                  onClick={() => {
+                    setIsLoginModalOpen(false);
+                    setError("");
+                  }}
+                  className="absolute top-4 right-4 p-1 text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+
+                <div className="flex justify-center mb-6">
+                  <div className={`w-16 h-16 ${activeColors.primary} rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-100`}>
+                    <Lock className="w-7 h-7" />
+                  </div>
+                </div>
+
+                <h2 className="text-2xl font-black text-center text-slate-900 tracking-tight mb-2">
+                  OTENTIKASI ADMIN
+                </h2>
+                <p className="text-center text-slate-500 mb-8 text-xs font-semibold uppercase tracking-wider">
+                  Sistem Administrasi Tata Usaha
+                </p>
+
+                <form onSubmit={handleLogin} className="space-y-6">
+                  <div>
+                    <label className="block text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-2">
+                      PIN Akses Admin
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        type="password"
+                        value={pin}
+                        onChange={(e) => setPin(e.target.value)}
+                        placeholder="Masukkan 6 digit PIN"
+                        className={`w-full pl-11 pr-4 py-3 border ${error ? "border-red-300 focus:ring-red-500" : "border-slate-200 focus:ring-slate-400"} rounded-2xl text-lg tracking-widest font-extrabold focus:outline-none focus:ring-1 bg-white/50 focus:bg-white transition-colors`}
+                        autoFocus
+                      />
+                    </div>
+                    {error && (
+                      <p className="text-red-500 text-xs font-semibold mt-2.5 flex items-center">
+                        <X className="w-3.5 h-3.5 mr-1" />
+                        {error}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    type="submit"
+                    className={`w-full ${activeColors.primary} ${activeColors.hover} text-white font-extrabold py-3.5 rounded-2xl text-xs sm:text-sm tracking-wide uppercase transition-all shadow-md shadow-indigo-100 cursor-pointer`}
+                  >
+                    Masuk Sistem Administrasi
+                  </button>
+                </form>
+
+                <div className="mt-8 pt-6 border-t border-slate-200/50 text-center">
+                  <p className="text-xs text-slate-500 font-medium">
+                    Gunakan PIN{" "}
+                    <span className="font-mono font-bold text-slate-700 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
+                      123456
+                    </span>{" "}
+                    untuk demo administrator
+                  </p>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }
