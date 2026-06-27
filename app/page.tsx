@@ -9626,6 +9626,344 @@ export default function App() {
           </div>
         </section>
 
+        {/* INTERACTIVE SDM INFOGRAPHIC SECTION */}
+        <section className="max-w-4xl mx-auto px-4 mb-20 sm:mb-28 z-10 relative">
+          <div className="bg-[#fcfdfd] border border-slate-200/60 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.06)] rounded-[2.5rem] p-6 sm:p-12 overflow-hidden relative">
+            
+            {/* Top decorative badge */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-teal-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+            {/* Infographic Header */}
+            <div className="flex flex-col items-center text-center mb-10 pb-8 border-b border-slate-100">
+              <div className="flex items-center gap-6 mb-4">
+                {/* Central Java Coat of Arms (Simplified elegant vector SVG) */}
+                <div className="w-14 h-14 flex items-center justify-center bg-white rounded-xl shadow-xs border border-slate-100 p-1">
+                  <svg viewBox="0 0 100 100" className="w-full h-full">
+                    {/* Shield shape */}
+                    <path d="M 50 10 C 20 10, 15 40, 15 60 C 15 85, 50 95, 50 95 C 50 95, 85 85, 85 60 C 85 40, 80 10, 50 10 Z" fill="#f8f9fa" stroke="#1b2a47" strokeWidth="3" />
+                    {/* Inner gold line */}
+                    <path d="M 50 15 C 26 15, 21 42, 21 60 C 21 81, 50 89, 50 89 C 50 89, 79 81, 79 60 C 79 42, 74 15, 50 15 Z" fill="none" stroke="#f3af22" strokeWidth="2" />
+                    {/* Red & White background inside shield */}
+                    <path d="M 50 15 C 26 15, 21 42, 21 60 C 21 68, 26 75, 33 80 L 33 15 Z" fill="#e63946" opacity="0.15" />
+                    {/* Gold temple silhouette in center */}
+                    <path d="M 40 75 L 43 55 L 47 55 L 45 42 L 55 42 L 53 55 L 57 55 L 60 75 Z" fill="#f3af22" stroke="#d49000" strokeWidth="1" />
+                    <rect x="35" y="75" width="30" height="5" rx="1.5" fill="#1b2a47" />
+                    {/* Rice and cotton ears (green/yellow details) */}
+                    <path d="M 28 65 C 28 50, 38 40, 42 45" fill="none" stroke="#2a9d8f" strokeWidth="2.5" strokeLinecap="round" />
+                    <path d="M 72 65 C 72 50, 62 40, 58 45" fill="none" stroke="#2a9d8f" strokeWidth="2.5" strokeLinecap="round" />
+                    {/* Star at top */}
+                    <polygon points="50,18 53,24 60,24 55,28 57,34 50,30 43,34 45,28 40,24 47,24" fill="#e63946" />
+                  </svg>
+                </div>
+
+                {/* Bakti Husada / Health Logo (Simplified elegant vector SVG) */}
+                <div className="w-14 h-14 flex items-center justify-center bg-white rounded-xl shadow-xs border border-slate-100 p-1">
+                  <svg viewBox="0 0 100 100" className="w-full h-full">
+                    {/* Blue cross back */}
+                    <path d="M 35 15 L 65 15 L 65 35 L 85 35 L 85 65 L 65 65 L 65 85 L 35 85 L 35 65 L 15 65 L 15 35 L 35 35 Z" fill="#1b2a47" />
+                    {/* White circle in center */}
+                    <circle cx="50" cy="50" r="24" fill="#ffffff" />
+                    {/* Green central shape (Bakti husada motif) */}
+                    <path d="M 50 32 C 40 32, 34 42, 38 52 C 42 62, 50 68, 50 68 C 50 68, 58 62, 62 52 C 66 42, 60 32, 50 32 Z" fill="#2a9d8f" />
+                    {/* Red internal crescent */}
+                    <path d="M 50 36 C 44 36, 40 43, 43 50 C 46 57, 50 62, 50 62" fill="none" stroke="#e63946" strokeWidth="3.5" strokeLinecap="round" />
+                    {/* Small inner white core */}
+                    <circle cx="50" cy="50" r="6" fill="#ffffff" />
+                  </svg>
+                </div>
+              </div>
+
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-[#111e38] tracking-tight font-sans leading-tight">
+                SUMBER DAYA MANUSIA
+              </h3>
+              <h4 className="text-xl sm:text-2xl font-black text-[#1b2a47] tracking-tight leading-none mt-1">
+                RSUD DR. MOEWARDI
+              </h4>
+              
+              <div className="bg-[#0f172a] text-white px-5 py-1.5 rounded-full text-xs font-bold mt-4 tracking-wider uppercase shadow-sm">
+                per Juni 2026
+              </div>
+            </div>
+
+            {/* Infographic Dashboard Content */}
+            <div className="space-y-12">
+              
+              {/* LAYER 1: JUMLAH PEGAWAI & JENIS KELAMIN */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-stretch">
+                
+                {/* 1A: JUMLAH PEGAWAI */}
+                <div className="md:col-span-6 bg-slate-50/50 rounded-3xl p-6 border border-slate-100 flex flex-col justify-center items-center text-center relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-[#1b2a47]"></div>
+                  <h5 className="text-xs sm:text-sm font-black text-slate-500 uppercase tracking-widest mb-3">JUMLAH PEGAWAI</h5>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-5xl sm:text-6xl font-black text-[#111e38] tracking-tight">2.403</span>
+                  </div>
+                  <span className="text-sm font-semibold text-slate-500 tracking-widest uppercase mt-2">Orang</span>
+                </div>
+
+                {/* 1B: JENIS KELAMIN */}
+                <div className="md:col-span-6 bg-slate-50/50 rounded-3xl p-6 border border-slate-100 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-[#1b2a47]"></div>
+                  <h5 className="text-xs sm:text-sm font-black text-slate-500 uppercase tracking-widest mb-4 text-center md:text-left">JENIS KELAMIN</h5>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Laki-laki */}
+                    <div className="flex flex-col items-center text-center">
+                      {/* Stylized Avatar Laki-Laki */}
+                      <div className="w-16 h-16 rounded-full bg-amber-100 border border-amber-200/60 overflow-hidden flex items-center justify-center mb-2 shadow-xs">
+                        <svg viewBox="0 0 100 100" className="w-12 h-12 mt-1">
+                          {/* Face */}
+                          <circle cx="50" cy="40" r="22" fill="#fbc4ab" />
+                          {/* Hair (Short modern) */}
+                          <path d="M 28 35 C 28 15, 72 15, 72 35 C 65 24, 35 24, 28 35" fill="#4a3b32" />
+                          {/* Shoulders / Shirt */}
+                          <path d="M 20 85 C 20 65, 80 65, 80 85 Z" fill="#d3a27f" />
+                          <path d="M 50 65 L 44 78 L 56 78 Z" fill="#fbc4ab" />
+                        </svg>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">Laki-Laki</span>
+                      <span className="text-lg font-black text-[#111e38] mt-0.5">931 Orang</span>
+                    </div>
+
+                    {/* Perempuan */}
+                    <div className="flex flex-col items-center text-center">
+                      {/* Stylized Avatar Perempuan */}
+                      <div className="w-16 h-16 rounded-full bg-pink-50 border border-pink-100 overflow-hidden flex items-center justify-center mb-2 shadow-xs">
+                        <svg viewBox="0 0 100 100" className="w-12 h-12 mt-1">
+                          {/* Hair back */}
+                          <circle cx="50" cy="46" r="26" fill="#2d221e" />
+                          {/* Face */}
+                          <circle cx="50" cy="42" r="21" fill="#fbc4ab" />
+                          {/* Hair front */}
+                          <path d="M 28 36 C 28 18, 72 18, 72 36 C 72 30, 28 30, 28 36" fill="#2d221e" />
+                          <path d="M 29 34 C 29 45, 34 45, 34 38" fill="#2d221e" />
+                          <path d="M 71 34 C 71 45, 66 45, 66 38" fill="#2d221e" />
+                          {/* Shoulders / Shirt */}
+                          <path d="M 22 85 C 22 68, 78 68, 78 85 Z" fill="#c39474" />
+                          <path d="M 50 68 L 45 78 L 55 78 Z" fill="#fbc4ab" />
+                        </svg>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">Perempuan</span>
+                      <span className="text-lg font-black text-[#111e38] mt-0.5">1.472 Orang</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* LAYER 2: JENIS TENAGA & PENDIDIKAN */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-stretch">
+                
+                {/* 2A: JENIS TENAGA */}
+                <div className="md:col-span-6 bg-slate-50/30 rounded-3xl p-6 border border-slate-100/80">
+                  <h5 className="text-xs sm:text-sm font-black text-slate-500 uppercase tracking-widest mb-6 text-center md:text-left">JENIS TENAGA</h5>
+                  
+                  <div className="space-y-4 font-sans">
+                    {[
+                      { name: "Struktural", val: 34, pct: 3, color: "bg-[#f37021]" },
+                      { name: "Medis", val: 263, pct: 11, color: "bg-[#f37021]" },
+                      { name: "Perawat/Bidan", val: 1180, pct: 49, color: "bg-[#f37021]" },
+                      { name: "Penunjang", val: 442, pct: 18, color: "bg-[#f37021]" },
+                      { name: "Administrasi", val: 484, pct: 20, color: "bg-[#f37021]" },
+                    ].map((tenaga, idx) => (
+                      <div key={idx} className="space-y-1">
+                        <div className="flex justify-between text-xs font-bold text-[#1b2a47]">
+                          <span>{tenaga.name}</span>
+                          <span>{tenaga.val}</span>
+                        </div>
+                        <div className="w-full h-3 bg-slate-200/60 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            whileInView={{ width: `${tenaga.pct}%` }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 1, delay: idx * 0.1 }}
+                            className={`h-full ${tenaga.color} rounded-full`}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2B: PENDIDIKAN */}
+                <div className="md:col-span-6 bg-slate-50/30 rounded-3xl p-6 border border-slate-100/80 flex flex-col justify-between">
+                  <h5 className="text-xs sm:text-sm font-black text-slate-500 uppercase tracking-widest mb-4 text-center md:text-left">PENDIDIKAN</h5>
+                  
+                  {/* Vertical Bar Chart */}
+                  <div className="flex items-end justify-between h-48 pt-6 border-b border-slate-300 px-2">
+                    {[
+                      { label: "SD", val: 0, pct: 1 },
+                      { label: "SMP", val: 2, pct: 2 },
+                      { label: "SMA", val: 296, pct: 31 },
+                      { label: "DIII", val: 936, pct: 100 },
+                      { label: "DIV", val: 180, pct: 19 },
+                      { label: "S1", val: 684, pct: 73 },
+                      { label: "S2", val: 269, pct: 28 },
+                      { label: "S3", val: 34, pct: 4 },
+                    ].map((edu, idx) => {
+                      return (
+                        <div key={idx} className="flex flex-col items-center flex-1 group">
+                          {/* Value on top */}
+                          <span className="text-[9px] sm:text-[10px] font-black text-[#1b2a47] mb-1.5 transition-transform group-hover:-translate-y-0.5">
+                            {edu.val}
+                          </span>
+                          {/* Vertical Bar */}
+                          <div className="w-6 sm:w-8 bg-slate-100 rounded-t-sm overflow-hidden flex items-end h-32 relative">
+                            <motion.div 
+                              initial={{ height: 0 }}
+                              whileInView={{ height: `${edu.pct}%` }}
+                              viewport={{ once: true }}
+                              transition={{ duration: 1.2, delay: idx * 0.05, ease: "easeOut" }}
+                              className="w-full bg-[#a20025] rounded-t-sm"
+                            />
+                          </div>
+                          {/* Label below line */}
+                          <span className="text-[10px] sm:text-xs font-black text-slate-500 mt-2">
+                            {edu.label}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* LAYER 3: JUMLAH DOKTER, GOLONGAN, STATUS KEPEGAWAIAN */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                
+                {/* 3A: JUMLAH DOKTER */}
+                <div className="md:col-span-4 space-y-4">
+                  <h5 className="text-xs sm:text-sm font-black text-slate-500 uppercase tracking-widest text-center md:text-left">JUMLAH DOKTER</h5>
+                  
+                  <div className="space-y-2.5">
+                    {[
+                      { name: "KONSULTAN", val: 141 },
+                      { name: "SPESIALIS", val: 103 },
+                      { name: "DOKTER UMUM", val: 19 },
+                      { name: "DR GIGI UMUM", val: 1 },
+                      { name: "DR GIGI SPESIALIS", val: 8 },
+                    ].map((doc, idx) => (
+                      <motion.div 
+                        key={idx}
+                        initial={{ opacity: 0, x: -10 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4, delay: idx * 0.08 }}
+                        className="bg-[#f37021] text-white pl-4 pr-1.5 py-1.5 rounded-full flex items-center justify-between shadow-xs"
+                      >
+                        <span className="text-[10px] font-black tracking-wider">{doc.name}</span>
+                        <span className="w-8 h-8 rounded-full bg-white text-[#f37021] flex items-center justify-center text-xs font-black shrink-0">
+                          {doc.val}
+                        </span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 3B: GOLONGAN */}
+                <div className="md:col-span-4 flex flex-col items-center">
+                  <h5 className="text-xs sm:text-sm font-black text-slate-500 uppercase tracking-widest text-center mb-6">GOLONGAN</h5>
+                  
+                  {/* SVG Donut Chart */}
+                  <div className="relative w-40 h-40 flex items-center justify-center mb-6">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                      {/* Segment 1: GOL II (231 -> 19%) - Slate */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="38"
+                        fill="transparent"
+                        stroke="#1d2d44"
+                        strokeWidth="10"
+                        strokeDasharray="238.76"
+                        strokeDashoffset="0"
+                      />
+                      {/* Segment 2: GOL III (695 -> 57%) - Cyan */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="38"
+                        fill="transparent"
+                        stroke="#00b4d8"
+                        strokeWidth="10"
+                        strokeDasharray="238.76"
+                        strokeDashoffset="45.36"
+                      />
+                      {/* Segment 3: GOL IV (287 -> 24%) - Red */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="38"
+                        fill="transparent"
+                        stroke="#a20025"
+                        strokeWidth="10"
+                        strokeDasharray="238.76"
+                        strokeDashoffset="181.45"
+                      />
+                    </svg>
+                    
+                    {/* Center text */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                      <span className="text-base font-extrabold text-[#111e38]">1.213</span>
+                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider">PNS</span>
+                    </div>
+                  </div>
+
+                  {/* Donut Legend */}
+                  <div className="text-left space-y-1.5 font-mono text-[10px] font-black tracking-wide">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 bg-[#a20025] inline-block shrink-0 rounded-xs"></span>
+                      <span className="text-slate-600">GOL IV : <span className="text-[#a20025]">287 ORANG</span></span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 bg-[#00b4d8] inline-block shrink-0 rounded-xs"></span>
+                      <span className="text-slate-600">GOL III : <span className="text-[#00b4d8]">695 ORANG</span></span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 bg-[#1d2d44] inline-block shrink-0 rounded-xs"></span>
+                      <span className="text-slate-600">GOL II : <span className="text-[#1d2d44]">231 ORANG</span></span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3C: STATUS KEPEGAWAIAN */}
+                <div className="md:col-span-4 space-y-4">
+                  <h5 className="text-xs sm:text-sm font-black text-slate-500 uppercase tracking-widest text-center md:text-left">STATUS KEPEGAWAIAN</h5>
+                  
+                  <div className="space-y-2.5">
+                    {[
+                      { name: "PNS", val: "1.213" },
+                      { name: "CPNS", val: "0" },
+                      { name: "PPPK", val: "184" },
+                      { name: "BLUD", val: "920" },
+                      { name: "MITRA", val: "52" },
+                    ].map((stat, idx) => (
+                      <motion.div 
+                        key={idx}
+                        initial={{ opacity: 0, x: 10 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4, delay: idx * 0.08 }}
+                        className="bg-[#20b2aa] text-white pl-1.5 pr-4 py-1.5 rounded-full flex items-center justify-between shadow-xs"
+                      >
+                        <span className="w-10 h-8 rounded-full bg-white/20 text-white flex items-center justify-center text-xs font-black shrink-0 border border-white/20">
+                          {stat.val}
+                        </span>
+                        <span className="text-xs font-black tracking-widest pr-4">{stat.name}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
         {/* LAYANAN UTAMA SECTION (PELAYANAN) */}
         <section id="layanan-utama" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20 sm:mb-28 z-10 relative scroll-mt-24">
           <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
