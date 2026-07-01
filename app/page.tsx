@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   LayoutDashboard,
@@ -49,6 +49,7 @@ import {
   UserPlus,
   Palette,
   ChevronDown,
+  Printer,
 } from "lucide-react";
 
 // --- MOCK DATA & CONFIGURATION ---
@@ -782,12 +783,16 @@ const INITIAL_PEGAWAI_LIST = [
     profesi_no_sip: "SIP-901-UMUM-2026",
     profesi_tgl_sip: "2021-06-01",
     profesi_tgl_kadaluarsa_sip: "2026-06-01",
-    profesi_pdf_str_sip: "str_sip_gabungan_budi.pdf",
+    profesi_pdf_str: "str_budi.pdf",
+    profesi_pdf_sip: "sip_budi.pdf",
     nikah_no_buku: "B-501/2008/VIII",
     nikah_no_kutipan: "KT-2008-B501",
     nikah_tgl: "2008-08-08",
     nikah_tempat: "KUA Coblong, Bandung",
     nikah_pdf: "buku_nikah_budi.pdf",
+    status_pernikahan: "Menikah",
+    pasangan_nama: "Sri Hartati",
+    pasangan_pekerjaan: "Ibu Rumah Tangga",
     jumlah_anak: 2,
     anak: [
       { nama: "Arga Santoso", tgl_lahir: "2010-05-12" },
@@ -864,12 +869,16 @@ const INITIAL_PEGAWAI_LIST = [
     profesi_no_sip: "SIP-Nurse-UGM-2027",
     profesi_tgl_sip: "2022-03-01",
     profesi_tgl_kadaluarsa_sip: "2027-02-15",
-    profesi_pdf_str_sip: "str_sip_ners_siti.pdf",
+    profesi_pdf_str: "str_siti.pdf",
+    profesi_pdf_sip: "sip_siti.pdf",
     nikah_no_buku: "B-302/2012/V",
     nikah_no_kutipan: "KT-2012-B302",
     nikah_tgl: "2012-05-15",
     nikah_tempat: "KUA Mlati, Sleman",
     nikah_pdf: "buku_nikah_siti.pdf",
+    status_pernikahan: "Menikah",
+    pasangan_nama: "Herman Prasetyo",
+    pasangan_pekerjaan: "Karyawan Swasta",
     jumlah_anak: 1,
     anak: [
       { nama: "Rasyad Ramadhan", tgl_lahir: "2014-06-20" },
@@ -1307,6 +1316,35 @@ const laporanData = [
 
 // --- COMPONENTS ---
 
+const Action3DButton = ({ icon: Icon, onClick, color = "slate", title }: { icon: any, onClick: (e?: any) => void, color?: "indigo" | "rose" | "emerald" | "amber" | "slate", title: string }) => {
+  const colorMap = {
+    indigo: { bg: "bg-indigo-500", edge: "bg-indigo-700", text: "text-white" },
+    rose: { bg: "bg-rose-500", edge: "bg-rose-700", text: "text-white" },
+    emerald: { bg: "bg-emerald-500", edge: "bg-emerald-700", text: "text-white" },
+    amber: { bg: "bg-amber-500", edge: "bg-amber-700", text: "text-white" },
+    slate: { bg: "bg-slate-500", edge: "bg-slate-700", text: "text-white" }
+  };
+
+  const c = colorMap[color];
+
+  return (
+    <button
+      type="button"
+      onClick={(e) => { e.stopPropagation(); onClick(e); }}
+      title={title}
+      className="group relative cursor-pointer outline-none w-7 h-7 focus:outline-none shrink-0"
+    >
+      {/* Edge / Depth */}
+      <div className={`absolute inset-0 rounded-md ${c.edge} translate-y-[3px] group-active:translate-y-[1px] transition-transform duration-150`}></div>
+      {/* Top Face */}
+      <div className={`absolute inset-0 rounded-md ${c.bg} transition-transform duration-150 ease-out group-hover:-translate-y-[1px] group-active:translate-y-[1px] flex items-center justify-center border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]`}>
+        <Icon className={`w-3.5 h-3.5 ${c.text} drop-shadow-sm`} strokeWidth={2.5} />
+      </div>
+    </button>
+  );
+};
+
+
 const DashboardCard = ({
   title,
   value,
@@ -1332,44 +1370,95 @@ const GenericTable = ({
   title,
   columns,
   data,
+  onAdd,
+  onEdit,
+  onDelete,
+  showPrint = false,
+  showPreview = false,
 }: {
   title: string;
   columns: any[];
   data: any[];
-}) => (
-  <motion.div
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="space-y-6"
-  >
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div>
-        <h2 className="text-lg font-bold text-slate-800">{title}</h2>
-        <p className="text-slate-500 text-sm mt-1">
-          Kelola dan pantau informasi {title.toLowerCase()}
-        </p>
-      </div>
-      <button className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded text-xs font-bold transition-colors shadow-sm flex items-center justify-center">
-        <Plus className="w-4 h-4 mr-2" />
-        Tambah Data
-      </button>
-    </div>
+  onAdd?: (item: any) => void;
+  onEdit?: (item: any) => void;
+  onDelete?: (item: any) => void;
+  showPrint?: boolean;
+  showPreview?: boolean;
+}) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [formData, setFormData] = useState<any>({});
 
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-      <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white">
-        <div className="relative">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Cari data..."
-            className="pl-10 pr-4 py-1.5 border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-slate-300 focus:border-slate-300 w-full sm:w-64 bg-slate-50"
-          />
+  const handleOpenModal = (item?: any) => {
+    if (item) {
+      setEditingItem(item);
+      setFormData(item);
+    } else {
+      setEditingItem(null);
+      setFormData({});
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleSave = () => {
+    if (editingItem && onEdit) {
+      onEdit(formData);
+    } else if (!editingItem && onAdd) {
+      onAdd({ ...formData, id: Date.now().toString() });
+    }
+    setIsModalOpen(false);
+  };
+
+  const handleDelete = (item: any) => {
+    if (onDelete) {
+      if (confirm("Apakah anda yakin ingin menghapus data ini?")) {
+        onDelete(item);
+      }
+    }
+  };
+
+  const handlePrint = (item: any) => {
+    alert(`Mencetak data:\n${JSON.stringify(item, null, 2)}`);
+  };
+
+  const handlePreview = (item: any) => {
+    alert(`Menampilkan preview untuk:\n${JSON.stringify(item, null, 2)}`);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-bold text-slate-800">{title}</h2>
+          <p className="text-slate-500 text-sm mt-1">
+            Kelola dan pantau informasi {title.toLowerCase()}
+          </p>
         </div>
-        <button className="text-slate-500 hover:text-slate-700 border border-slate-200 px-3 py-1.5 rounded text-xs bg-white font-bold">
-          Filter
+        <button onClick={() => handleOpenModal()} className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded text-xs font-bold transition-colors shadow-sm flex items-center justify-center">
+          <Plus className="w-4 h-4 mr-2" />
+          Tambah Data
         </button>
       </div>
-      <div className="overflow-x-auto">
+
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white">
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Cari data..."
+              className="pl-10 pr-4 py-1.5 border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-slate-300 focus:border-slate-300 w-full sm:w-64 bg-slate-50"
+            />
+          </div>
+          <button className="text-slate-500 hover:text-slate-700 border border-slate-200 px-3 py-1.5 rounded text-xs bg-white font-bold">
+            Filter
+          </button>
+        </div>
+        <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-50 text-[10px] uppercase text-slate-400 font-bold border-b border-slate-200">
@@ -1409,12 +1498,36 @@ const GenericTable = ({
                   </td>
                 ))}
                 <td className="px-4 py-3 text-right whitespace-nowrap">
-                  <button className="text-indigo-600 hover:text-indigo-800 font-bold text-xs mr-4 transition-colors">
-                    Edit
-                  </button>
-                  <button className="text-rose-600 hover:text-rose-800 font-bold text-xs transition-colors">
-                    Hapus
-                  </button>
+                  <div className="flex items-center justify-end gap-2">
+                    {showPreview && (
+                      <Action3DButton
+                        icon={Eye}
+                        onClick={() => handlePreview(row)}
+                        color="slate"
+                        title="Preview"
+                      />
+                    )}
+                    {showPrint && (
+                      <Action3DButton
+                        icon={Printer}
+                        onClick={() => handlePrint(row)}
+                        color="emerald"
+                        title="Cetak"
+                      />
+                    )}
+                    <Action3DButton
+                      icon={Edit}
+                      onClick={() => handleOpenModal(row)}
+                      color="indigo"
+                      title="Edit"
+                    />
+                    <Action3DButton
+                      icon={Trash2}
+                      onClick={() => handleDelete(row)}
+                      color="rose"
+                      title="Hapus"
+                    />
+                  </div>
                 </td>
               </tr>
             ))}
@@ -1449,8 +1562,39 @@ const GenericTable = ({
         </div>
       </div>
     </div>
+    
+    {isModalOpen && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
+            <h3 className="font-bold text-slate-800">{editingItem ? "Edit Data" : "Tambah Data"}</h3>
+            <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="p-4 overflow-y-auto space-y-4 text-sm">
+            {columns.map((col, idx) => (
+              <div key={idx} className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{col.header}</label>
+                <input
+                  type="text"
+                  value={formData[col.accessor] || ""}
+                  onChange={(e) => setFormData({ ...formData, [col.accessor]: e.target.value })}
+                  className="w-full border border-slate-200 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
+            <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors">Batal</button>
+            <button onClick={handleSave} className="px-4 py-2 rounded text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-sm">{editingItem ? "Simpan Perubahan" : "Simpan"}</button>
+          </div>
+        </motion.div>
+      </div>
+    )}
   </motion.div>
-);
+  );
+};
 
 const MasterDataView = ({
   store,
@@ -1617,18 +1761,20 @@ const MasterDataView = ({
                         {item.keterangan}
                       </td>
                       <td className="px-4 py-3 text-right whitespace-nowrap">
-                        <button
-                          onClick={() => openEditModal(rIdx, item)}
-                          className="text-indigo-600 hover:text-indigo-800 font-bold text-xs mr-4 transition-colors cursor-pointer"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => onDeleteItem(selectedCategory, rIdx)}
-                          className="text-rose-600 hover:text-rose-800 font-bold text-xs transition-colors cursor-pointer"
-                        >
-                          Hapus
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <Action3DButton
+                            icon={Edit}
+                            onClick={() => openEditModal(rIdx, item)}
+                            color="indigo"
+                            title="Edit"
+                          />
+                          <Action3DButton
+                            icon={Trash2}
+                            onClick={() => onDeleteItem(selectedCategory, rIdx)}
+                            color="rose"
+                            title="Hapus"
+                          />
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1806,6 +1952,106 @@ const FileUploadField = ({
   );
 };
 
+const SearchableSelect = ({
+  label,
+  value,
+  onChange,
+  options,
+  placeholder = "Pilih...",
+}: {
+  label: string;
+  value: string;
+  onChange: (val: string) => void;
+  options: { kode: string; nama: string; keterangan?: string }[];
+  placeholder?: string;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const filteredOptions = options.filter((opt) =>
+    opt.nama.toLowerCase().includes(search.toLowerCase()) ||
+    (opt.keterangan || "").toLowerCase().includes(search.toLowerCase()) ||
+    opt.kode.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const selectedOption = options.find((opt) => opt.nama === value || opt.kode === value);
+
+  return (
+    <div ref={containerRef} className="relative w-full">
+      <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+        {label}
+      </label>
+      <button
+        type="button"
+        onClick={() => {
+          setIsOpen(!isOpen);
+          setSearch("");
+        }}
+        className="w-full flex items-center justify-between px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white text-left font-semibold text-slate-700"
+      >
+        <span className={selectedOption ? "text-slate-800 font-semibold" : "text-slate-400"}>
+          {selectedOption ? selectedOption.nama : placeholder}
+        </span>
+        <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded shadow-lg max-h-60 overflow-y-auto">
+          <div className="sticky top-0 bg-slate-50 p-2 border-b border-slate-100 flex items-center gap-2">
+            <Search className="w-3.5 h-3.5 text-slate-400 shrink-0 ml-1" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cari..."
+              className="w-full bg-transparent border-none outline-none focus:ring-0 text-xs py-0.5"
+              autoFocus
+            />
+          </div>
+          <div className="py-1">
+            {filteredOptions.length === 0 ? (
+              <div className="px-3 py-2 text-xs text-slate-400 text-center">Tidak ada hasil</div>
+            ) : (
+              filteredOptions.map((opt) => {
+                const isSelected = value === opt.nama || value === opt.kode;
+                return (
+                  <button
+                    key={opt.kode}
+                    type="button"
+                    onClick={() => {
+                      onChange(opt.nama);
+                      setIsOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-xs hover:bg-slate-50 flex flex-col transition-colors ${
+                      isSelected ? "bg-indigo-50/50 text-indigo-900 font-bold" : "text-slate-700"
+                    }`}
+                  >
+                    <span>{opt.nama}</span>
+                    {opt.keterangan && (
+                      <span className="text-[10px] text-slate-400 font-normal">{opt.keterangan}</span>
+                    )}
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const PegawaiView = ({
   pegawaiList,
   onAddPegawai,
@@ -1925,12 +2171,22 @@ const PegawaiView = ({
     profesi_no_sip: "",
     profesi_tgl_sip: "",
     profesi_tgl_kadaluarsa_sip: "",
-    profesi_pdf_str_sip: null as string | null,
+    profesi_pdf_str: null as string | null,
+    profesi_pdf_sip: null as string | null,
     nikah_no_buku: "",
     nikah_no_kutipan: "",
     nikah_tgl: "",
     nikah_tempat: "",
     nikah_pdf: null as string | null,
+    status_pernikahan: "Belum Menikah",
+    pasangan_nama: "",
+    pasangan_pekerjaan: "",
+    cerai_hidup_pdf: null as string | null,
+    cerai_mati_pdf: null as string | null,
+    cerai_no_akta: "",
+    cerai_tgl: "",
+    kematian_no_akta: "",
+    kematian_tgl: "",
     jumlah_anak: 0,
     anak: [
       { nama: "", tgl_lahir: "" },
@@ -1947,6 +2203,8 @@ const PegawaiView = ({
     no_jkn_kis: "",
     no_jamsostek: "",
     no_rekening: "",
+    bank_nama: "",
+    bank_rekening_num: "",
     npwp_pdf: null as string | null,
     bank_pdf: null as string | null,
   };
@@ -1980,9 +2238,29 @@ const PegawaiView = ({
   const openEditModal = (index: number, item: any) => {
     setEditingIndex(index);
     // Ensure nested fields are initialized properly
+    let initialBankNama = item.bank_nama || "";
+    let initialBankRekeningNum = item.bank_rekening_num || "";
+    if (!initialBankNama && item.no_rekening) {
+      const parts = item.no_rekening.split(" - ");
+      if (parts.length > 1) {
+        initialBankNama = parts[0];
+        initialBankRekeningNum = parts.slice(1).join(" - ");
+      } else {
+        const masterBanks = masterDataStore.jenis_nama_bank?.items || [];
+        const foundBank = masterBanks.find((b: any) => item.no_rekening.includes(b.nama));
+        if (foundBank) {
+          initialBankNama = foundBank.nama;
+          initialBankRekeningNum = item.no_rekening.replace(foundBank.nama, "").replace(/^[\s-:]+/, "");
+        } else {
+          initialBankRekeningNum = item.no_rekening;
+        }
+      }
+    }
     setFormState({
       ...initialFormState,
       ...item,
+      bank_nama: initialBankNama,
+      bank_rekening_num: initialBankRekeningNum,
       anak: item.anak ? [...item.anak] : [
         { nama: "", tgl_lahir: "" },
         { nama: "", tgl_lahir: "" },
@@ -2011,8 +2289,13 @@ const PegawaiView = ({
       return;
     }
 
+    const calculatedNoRekening = formState.bank_nama
+      ? `${formState.bank_nama} - ${formState.bank_rekening_num}`
+      : formState.bank_rekening_num;
+
     const payload = {
       ...formState,
+      no_rekening: calculatedNoRekening,
       umur: getAgeText(formState.tanggal_lahir),
       lama_kerja_rs: getTenureText(formState.tmt_rs),
       lama_kerja_cpns: getTenureText(formState.tmt_cpns),
@@ -2122,24 +2405,26 @@ const PegawaiView = ({
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
-                    <button
-                      onClick={() => openDetailModal(row)}
-                      className="text-slate-600 hover:text-slate-900 font-bold text-xs mr-3 transition-colors cursor-pointer"
-                    >
-                      Detail
-                    </button>
-                    <button
-                      onClick={() => openEditModal(rIdx, row)}
-                      className="text-indigo-600 hover:text-indigo-800 font-bold text-xs mr-3 transition-colors cursor-pointer"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => onDeletePegawai(rIdx)}
-                      className="text-rose-600 hover:text-rose-800 font-bold text-xs transition-colors cursor-pointer"
-                    >
-                      Hapus
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <Action3DButton
+                        icon={Eye}
+                        onClick={() => openDetailModal(row)}
+                        color="slate"
+                        title="Detail"
+                      />
+                      <Action3DButton
+                        icon={Edit}
+                        onClick={() => openEditModal(rIdx, row)}
+                        color="indigo"
+                        title="Edit"
+                      />
+                      <Action3DButton
+                        icon={Trash2}
+                        onClick={() => onDeletePegawai(rIdx)}
+                        color="rose"
+                        title="Hapus"
+                      />
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -2380,32 +2665,13 @@ const PegawaiView = ({
                       </div>
                     </div>
 
-                    {/* Pendidikan Spesialis & Profesi */}
-                    <div className="bg-slate-50/50 p-3 rounded-lg border border-slate-100 space-y-2">
-                      <p className="font-bold text-[10px] text-slate-500 uppercase border-b border-slate-200 pb-1 flex items-center justify-between">
-                        <span>Pendidikan Profesi</span>
-                        {selectedPegawai.profesi_pdf && <span className="text-[9px] text-emerald-600 font-bold bg-emerald-50 px-1.5 rounded">PDF Tersedia</span>}
-                      </p>
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="col-span-2">
-                          <p className="text-slate-400 text-[10px]">Nama Institusi Profesi</p>
-                          <p className="font-semibold text-slate-900">{selectedPegawai.profesi_nama_sekolah || "-"}</p>
-                        </div>
-                        <div>
-                          <p className="text-slate-400 text-[10px]">Jenjang, Prodi & Profesi</p>
-                          <p className="font-medium text-slate-900">{selectedPegawai.profesi_jenjang || "-"} - {selectedPegawai.profesi_prodi || "-"} ({getMasterLabel("jenis_profesi", selectedPegawai.profesi_jenis)})</p>
-                        </div>
-                        <div>
-                          <p className="text-slate-400 text-[10px]">No. Ijazah Profesi</p>
-                          <p className="font-medium text-slate-900">{selectedPegawai.profesi_no_ijazah || "-"} ({selectedPegawai.profesi_tahun_lulus || "-"})</p>
-                        </div>
-                      </div>
-                    </div>
-
                     {/* STR & SIP Data */}
-                    <div className="md:col-span-2 bg-slate-50/50 p-3 rounded-lg border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2 bg-slate-50/50 p-3 rounded-lg border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                       <div>
-                        <p className="font-bold text-[10px] text-slate-500 uppercase border-b border-slate-200 pb-1">REGISTRASI STR (Surat Tanda Registrasi)</p>
+                        <p className="font-bold text-[10px] text-slate-500 uppercase border-b border-slate-200 pb-1 flex items-center justify-between">
+                          <span>REGISTRASI STR (Surat Tanda Registrasi)</span>
+                          {selectedPegawai.profesi_pdf_str && <span className="text-[9px] text-emerald-600 font-bold bg-emerald-50 px-1.5 rounded">PDF STR Tersedia</span>}
+                        </p>
                         <div className="mt-2 space-y-1.5 text-xs">
                           <p><span className="text-slate-400">Nomor STR:</span> <span className="font-semibold font-mono text-slate-900">{selectedPegawai.profesi_no_str || "-"}</span></p>
                           <p><span className="text-slate-400">Tanggal Berlaku:</span> <span className="font-medium text-slate-800">{selectedPegawai.profesi_tgl_berlaku || "-"}</span></p>
@@ -2417,7 +2683,10 @@ const PegawaiView = ({
                         </div>
                       </div>
                       <div>
-                        <p className="font-bold text-[10px] text-slate-500 uppercase border-b border-slate-200 pb-1">SIP (Surat Izin Praktik)</p>
+                        <p className="font-bold text-[10px] text-slate-500 uppercase border-b border-slate-200 pb-1 flex items-center justify-between">
+                          <span>SIP (Surat Izin Praktik)</span>
+                          {selectedPegawai.profesi_pdf_sip && <span className="text-[9px] text-emerald-600 font-bold bg-emerald-50 px-1.5 rounded">PDF SIP Tersedia</span>}
+                        </p>
                         <div className="mt-2 space-y-1.5 text-xs">
                           <p><span className="text-slate-400">Nomor SIP:</span> <span className="font-semibold font-mono text-slate-900">{selectedPegawai.profesi_no_sip || "-"}</span></p>
                           <p><span className="text-slate-400">Tanggal SIP:</span> <span className="font-medium text-slate-800">{selectedPegawai.profesi_tgl_sip || "-"}</span></p>
@@ -2430,42 +2699,176 @@ const PegawaiView = ({
 
                 {/* 5. Data Keluarga */}
                 <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-4">
-                  <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                    <Heart className="w-4 h-4 text-slate-400" />
-                    <h4 className="font-bold text-xs uppercase tracking-wider text-slate-600">Pernikahan & Data Anak</h4>
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <div className="flex items-center gap-2">
+                      <Heart className="w-4 h-4 text-slate-400" />
+                      <h4 className="font-bold text-xs uppercase tracking-wider text-slate-600">Status Pernikahan & Keluarga</h4>
+                    </div>
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase ${
+                      selectedPegawai.status_pernikahan === "Menikah"
+                        ? "bg-indigo-100 text-indigo-800"
+                        : selectedPegawai.status_pernikahan === "Cerai Hidup"
+                        ? "bg-rose-100 text-rose-800"
+                        : selectedPegawai.status_pernikahan === "Cerai Mati"
+                        ? "bg-slate-100 text-slate-800"
+                        : "bg-amber-100 text-amber-800"
+                    }`}>
+                      {selectedPegawai.status_pernikahan || "Menikah"}
+                    </span>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                    <div>
-                      <p className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">No. Akta / Buku Nikah</p>
-                      <p className="font-medium mt-1 text-slate-900">{selectedPegawai.nikah_no_buku || "-"}</p>
+
+                  {/* CASE 1: BELUM MENIKAH */}
+                  {(selectedPegawai.status_pernikahan === "Belum Menikah") && (
+                    <div className="p-4 bg-slate-50 border border-dashed border-slate-200 rounded-lg text-center">
+                      <p className="text-slate-500 text-xs font-semibold">Status: Belum Menikah</p>
+                      <p className="text-slate-400 text-[10px] mt-0.5">Seluruh data pasangan, dokumen nikah, dan data anak disembunyikan.</p>
                     </div>
-                    <div>
-                      <p className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">No. Kutipan Akta</p>
-                      <p className="font-medium mt-1 text-slate-900">{selectedPegawai.nikah_no_kutipan || "-"}</p>
-                    </div>
-                    <div>
-                      <p className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Tempat & Tanggal Nikah</p>
-                      <p className="font-medium mt-1 text-slate-900">{selectedPegawai.nikah_tempat || "-"}, {selectedPegawai.nikah_tgl || "-"}</p>
-                    </div>
-                    
-                    <div className="md:col-span-3 border-t border-slate-100 pt-3">
-                      <p className="text-slate-400 font-bold uppercase text-[9px] tracking-wider mb-2">Daftar Anak (Jumlah Anak: {selectedPegawai.jumlah_anak || 0})</p>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        {selectedPegawai.anak?.slice(0, 3).map((a: any, i: number) => a.nama ? (
-                          <div key={i} className="p-2.5 border border-slate-100 bg-slate-50/50 rounded-lg flex items-start gap-2">
-                            <Baby className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
-                            <div>
-                              <p className="font-semibold text-slate-800 text-xs">{a.nama}</p>
-                              <p className="text-[10px] text-slate-500 mt-0.5">Tgl Lahir: {a.tgl_lahir || "-"}</p>
-                            </div>
+                  )}
+
+                  {/* CASE 2: MENIKAH */}
+                  {(selectedPegawai.status_pernikahan === "Menikah" || !selectedPegawai.status_pernikahan) && (
+                    <div className="space-y-4 text-xs">
+                      {/* Pasangan Info */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/50 p-3 rounded-lg border border-slate-100">
+                        <div>
+                          <p className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Nama Pasangan (Suami/Istri)</p>
+                          <p className="font-semibold mt-1 text-slate-900">{selectedPegawai.pasangan_nama || "-"}</p>
+                        </div>
+                        <div>
+                          <p className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Pekerjaan Pasangan</p>
+                          <p className="font-medium mt-1 text-slate-800">{selectedPegawai.pasangan_pekerjaan || "-"}</p>
+                        </div>
+                      </div>
+
+                      {/* Pernikahan Dokumen */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-slate-100 pt-3">
+                        <div>
+                          <p className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">No. Akta / Buku Nikah</p>
+                          <p className="font-medium mt-1 text-slate-900">{selectedPegawai.nikah_no_buku || "-"}</p>
+                        </div>
+                        <div>
+                          <p className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">No. Kutipan Akta</p>
+                          <p className="font-medium mt-1 text-slate-900">{selectedPegawai.nikah_no_kutipan || "-"}</p>
+                        </div>
+                        <div>
+                          <p className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Tempat & Tanggal Nikah</p>
+                          <p className="font-medium mt-1 text-slate-900">
+                            {selectedPegawai.nikah_tempat || "-"}, {selectedPegawai.nikah_tgl || "-"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* File Nikah */}
+                      {selectedPegawai.nikah_pdf && (
+                        <div className="flex items-center gap-2 p-2 bg-indigo-50/40 border border-indigo-100 rounded-lg max-w-sm mt-2">
+                          <FileText className="w-4 h-4 text-indigo-500" />
+                          <div className="truncate">
+                            <p className="text-[10px] font-bold text-indigo-900 uppercase">Dokumen Buku Nikah</p>
+                            <p className="text-[9px] text-indigo-700 font-mono truncate">{selectedPegawai.nikah_pdf}</p>
                           </div>
-                        ) : null)}
-                        {(!selectedPegawai.anak || selectedPegawai.anak.filter((a:any)=>a.nama).length === 0) && (
-                          <span className="text-slate-400 text-xs">Belum ada data anak diinput.</span>
-                        )}
+                        </div>
+                      )}
+
+                      {/* Anak List */}
+                      <div className="border-t border-slate-100 pt-3">
+                        <p className="text-slate-400 font-bold uppercase text-[9px] tracking-wider mb-2">Daftar Anak (Jumlah Anak: {selectedPegawai.jumlah_anak || 0})</p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          {selectedPegawai.anak?.slice(0, 3).map((a: any, i: number) => a.nama ? (
+                            <div key={i} className="p-2.5 border border-slate-100 bg-slate-50/50 rounded-lg flex items-start gap-2">
+                              <Baby className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
+                              <div>
+                                <p className="font-semibold text-slate-800 text-xs">{a.nama}</p>
+                                <p className="text-[10px] text-slate-500 mt-0.5">Tgl Lahir: {a.tgl_lahir || "-"}</p>
+                              </div>
+                            </div>
+                          ) : null)}
+                          {(!selectedPegawai.anak || selectedPegawai.anak.filter((a:any)=>a.nama).length === 0) && (
+                            <span className="text-slate-400 text-xs">Belum ada data anak diinput.</span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* CASE 3: CERAI HIDUP */}
+                  {selectedPegawai.status_pernikahan === "Cerai Hidup" && (
+                    <div className="space-y-4 text-xs">
+                      {/* Riwayat Pasangan */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/50 p-3 rounded-lg border border-slate-100">
+                        <div>
+                          <p className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Nama Mantan Pasangan</p>
+                          <p className="font-semibold mt-1 text-slate-900">{selectedPegawai.pasangan_nama || "-"}</p>
+                        </div>
+                        <div>
+                          <p className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Pekerjaan Mantan Pasangan</p>
+                          <p className="font-medium mt-1 text-slate-800">{selectedPegawai.pasangan_pekerjaan || "-"}</p>
+                        </div>
+                      </div>
+
+                      {/* Dokumen Cerai */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-100 pt-3">
+                        <div>
+                          <p className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Nomor Akta Cerai</p>
+                          <p className="font-bold text-slate-900 font-mono mt-1">{selectedPegawai.cerai_no_akta || "-"}</p>
+                        </div>
+                        <div>
+                          <p className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Tanggal Perceraian Resmi</p>
+                          <p className="font-medium mt-1 text-slate-900">{selectedPegawai.cerai_tgl || "-"}</p>
+                        </div>
+                      </div>
+
+                      {/* File Akta Cerai */}
+                      {selectedPegawai.cerai_hidup_pdf && (
+                        <div className="flex items-center gap-2 p-2 bg-rose-50/40 border border-rose-100 rounded-lg max-w-sm">
+                          <FileText className="w-4 h-4 text-rose-500" />
+                          <div className="truncate">
+                            <p className="text-[10px] font-bold text-rose-900 uppercase">Dokumen Akta Cerai</p>
+                            <p className="text-[9px] text-rose-700 font-mono truncate">{selectedPegawai.cerai_hidup_pdf}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* CASE 4: CERAI MATI */}
+                  {selectedPegawai.status_pernikahan === "Cerai Mati" && (
+                    <div className="space-y-4 text-xs">
+                      {/* Data Pasangan */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/50 p-3 rounded-lg border border-slate-100">
+                        <div>
+                          <p className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Nama Mendiang Pasangan</p>
+                          <p className="font-semibold mt-1 text-slate-900">{selectedPegawai.pasangan_nama || "-"}</p>
+                        </div>
+                        <div>
+                          <p className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Status Hubungan</p>
+                          <p className="font-medium mt-1 text-slate-800">Almarhum / Almarhumah</p>
+                        </div>
+                      </div>
+
+                      {/* Dokumen Kematian */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-100 pt-3">
+                        <div>
+                          <p className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Nomor Akta Kematian</p>
+                          <p className="font-bold text-slate-900 font-mono mt-1">{selectedPegawai.kematian_no_akta || "-"}</p>
+                        </div>
+                        <div>
+                          <p className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Tanggal Meninggal Dunia</p>
+                          <p className="font-medium mt-1 text-slate-900">{selectedPegawai.kematian_tgl || "-"}</p>
+                        </div>
+                      </div>
+
+                      {/* File Akta Kematian */}
+                      {selectedPegawai.cerai_mati_pdf && (
+                        <div className="flex items-center gap-2 p-2 bg-slate-50 border border-slate-200 rounded-lg max-w-sm">
+                          <FileText className="w-4 h-4 text-slate-500" />
+                          <div className="truncate">
+                            <p className="text-[10px] font-bold text-slate-700 uppercase">Dokumen Akta Kematian</p>
+                            <p className="text-[9px] text-slate-500 font-mono truncate">{selectedPegawai.cerai_mati_pdf}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* 6. Kontak, Finansial & Jaminan */}
@@ -2538,7 +2941,7 @@ const PegawaiView = ({
               exit={{ opacity: 0, scale: 0.95 }}
               className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-slate-100 flex flex-col"
             >
-              <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+              <div className="p-5 border-b border-slate-100 flex items-center justify-between shrink-0">
                 <div>
                   <h3 className="font-bold text-slate-950 text-sm">
                     {editingIndex !== null ? "Edit Data Profil Pegawai" : "Tambah Pegawai Baru"}
@@ -2554,12 +2957,12 @@ const PegawaiView = ({
               </div>
 
               {/* Wizard Form Tabs Header */}
-              <div className="border-b border-slate-100 bg-slate-50 px-4 flex gap-1 overflow-x-auto no-scrollbar py-1">
+              <div className="border-b border-slate-100 bg-slate-50 px-4 flex gap-1 overflow-x-auto no-scrollbar py-1 shrink-0">
                 {[
                   { id: 1, label: "1. Identitas Diri" },
                   { id: 2, label: "2. Jabatan & SDMK" },
                   { id: 3, label: "3. TMT & Berkas SK" },
-                  { id: 4, label: "4. Pendidikan & STR" },
+                  { id: 4, label: "4. Pendidikan & Profesi" },
                   { id: 5, label: "5. Pernikahan & Anak" },
                   { id: 6, label: "6. Kontak & Finansial" },
                 ].map((t) => (
@@ -3037,161 +3440,98 @@ const PegawaiView = ({
                       </div>
                     </div>
 
-                    {/* Profesi & Sertifikasi */}
+                    {/* STR & SIP Grid */}
                     <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1 mb-3">Pendidikan Profesi & Sertifikasi Kompetensi</p>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="md:col-span-2">
-                          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Nama Sekolah / PT Profesi</label>
-                          <input
-                            type="text"
-                            value={formState.profesi_nama_sekolah}
-                            onChange={(e) => setFormState({ ...formState, profesi_nama_sekolah: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Jenjang Profesi</label>
-                          <select
-                            value={formState.profesi_jenjang}
-                            onChange={(e) => setFormState({ ...formState, profesi_jenjang: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
-                          >
-                            {masterDataStore.jenjang_pendidikan?.items.map((i: any) => (
-                              <option key={i.kode} value={i.kode}>{i.nama}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Program Studi Profesi</label>
-                          <input
-                            type="text"
-                            value={formState.profesi_prodi}
-                            onChange={(e) => setFormState({ ...formState, profesi_prodi: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Nomor Ijazah Profesi</label>
-                          <input
-                            type="text"
-                            value={formState.profesi_no_ijazah}
-                            onChange={(e) => setFormState({ ...formState, profesi_no_ijazah: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Tahun Lulus Profesi</label>
-                          <input
-                            type="text"
-                            value={formState.profesi_tahun_lulus}
-                            onChange={(e) => setFormState({ ...formState, profesi_tahun_lulus: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
-                          />
-                        </div>
-                        <div className="md:col-span-3">
-                          <FileUploadField
-                            label="Upload PDF Ijazah Profesi"
-                            value={formState.profesi_pdf}
-                            onChange={(fn) => setFormState({ ...formState, profesi_pdf: fn })}
-                            id="prof-pdf"
-                          />
-                        </div>
-                        
-                        <div className="md:col-span-3 border-t border-slate-100 pt-3">
-                          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Jenis Profesi</label>
-                          <select
-                            value={formState.profesi_jenis}
-                            onChange={(e) => setFormState({ ...formState, profesi_jenis: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
-                          >
-                            {masterDataStore.jenis_profesi?.items.map((i: any) => (
-                              <option key={i.kode} value={i.kode}>{i.nama}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        {/* STR & SIP Grid */}
-                        <div className="md:col-span-3 bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-4">
-                          <p className="font-bold text-[11px] text-slate-600 uppercase">STR (Surat Tanda Registrasi) & SIP (Surat Izin Praktik)</p>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                              <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Nomor STR</label>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1 mb-3">STR & SIP</p>
+                      <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Nomor STR</label>
+                            <input
+                              type="text"
+                              value={formState.profesi_no_str}
+                              onChange={(e) => setFormState({ ...formState, profesi_no_str: e.target.value })}
+                              className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs bg-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tanggal Berlaku STR</label>
+                            <input
+                              type="date"
+                              value={formState.profesi_tgl_berlaku}
+                              onChange={(e) => setFormState({ ...formState, profesi_tgl_berlaku: e.target.value })}
+                              className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs bg-white"
+                            />
+                          </div>
+                          <div className="flex flex-col justify-end">
+                            <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer mb-2">
                               <input
-                                type="text"
-                                value={formState.profesi_no_str}
-                                onChange={(e) => setFormState({ ...formState, profesi_no_str: e.target.value })}
-                                className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs bg-white"
+                                type="checkbox"
+                                checked={formState.profesi_is_seumur_hidup}
+                                onChange={(e) => setFormState({ ...formState, profesi_is_seumur_hidup: e.target.checked })}
+                                className="rounded text-indigo-600 border-slate-300 focus:ring-indigo-500"
                               />
-                            </div>
-                            <div>
-                              <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tanggal Berlaku STR</label>
-                              <input
-                                type="date"
-                                value={formState.profesi_tgl_berlaku}
-                                onChange={(e) => setFormState({ ...formState, profesi_tgl_berlaku: e.target.value })}
-                                className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs bg-white"
-                              />
-                            </div>
-                            <div className="flex flex-col justify-end">
-                              <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer mb-2">
+                              <span className="font-bold text-[11px] uppercase tracking-wider text-indigo-700">STR Seumur Hidup</span>
+                            </label>
+                            {!formState.profesi_is_seumur_hidup && (
+                              <div>
+                                <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tanggal Kadaluarsa STR</label>
                                 <input
-                                  type="checkbox"
-                                  checked={formState.profesi_is_seumur_hidup}
-                                  onChange={(e) => setFormState({ ...formState, profesi_is_seumur_hidup: e.target.checked })}
-                                  className="rounded text-indigo-600 border-slate-300 focus:ring-indigo-500"
+                                  type="date"
+                                  value={formState.profesi_tgl_kadaluarsa}
+                                  onChange={(e) => setFormState({ ...formState, profesi_tgl_kadaluarsa: e.target.value })}
+                                  className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs bg-white"
                                 />
-                                <span className="font-bold text-[11px] uppercase tracking-wider text-indigo-700">STR Seumur Hidup</span>
-                              </label>
-                              {!formState.profesi_is_seumur_hidup && (
-                                <div>
-                                  <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tanggal Kadaluarsa STR</label>
-                                  <input
-                                    type="date"
-                                    value={formState.profesi_tgl_kadaluarsa}
-                                    onChange={(e) => setFormState({ ...formState, profesi_tgl_kadaluarsa: e.target.value })}
-                                    className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs bg-white"
-                                  />
-                                </div>
-                              )}
-                            </div>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="md:col-span-3 mb-4">
+                            <FileUploadField
+                              label="Upload PDF STR"
+                              value={formState.profesi_pdf_str}
+                              onChange={(fn) => setFormState({ ...formState, profesi_pdf_str: fn })}
+                              id="str-pdf"
+                            />
+                          </div>
 
-                            <div>
-                              <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Nomor SIP</label>
-                              <input
-                                type="text"
-                                value={formState.profesi_no_sip}
-                                onChange={(e) => setFormState({ ...formState, profesi_no_sip: e.target.value })}
-                                className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs bg-white"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tanggal SIP</label>
-                              <input
-                                type="date"
-                                value={formState.profesi_tgl_sip}
-                                onChange={(e) => setFormState({ ...formState, profesi_tgl_sip: e.target.value })}
-                                className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs bg-white"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tanggal Kadaluarsa SIP</label>
-                              <input
-                                type="date"
-                                value={formState.profesi_tgl_kadaluarsa_sip}
-                                onChange={(e) => setFormState({ ...formState, profesi_tgl_kadaluarsa_sip: e.target.value })}
-                                className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs bg-white"
-                              />
-                            </div>
+                          <div className="md:col-span-3 border-t border-slate-200 my-2"></div>
 
-                            <div className="md:col-span-3">
-                              <FileUploadField
-                                label="Upload PDF STR & PDF SIP"
-                                value={formState.profesi_pdf_str_sip}
-                                onChange={(fn) => setFormState({ ...formState, profesi_pdf_str_sip: fn })}
-                                id="str-sip-pdf"
-                              />
-                            </div>
+                          <div>
+                            <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Nomor SIP</label>
+                            <input
+                              type="text"
+                              value={formState.profesi_no_sip}
+                              onChange={(e) => setFormState({ ...formState, profesi_no_sip: e.target.value })}
+                              className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs bg-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tanggal SIP</label>
+                            <input
+                              type="date"
+                              value={formState.profesi_tgl_sip}
+                              onChange={(e) => setFormState({ ...formState, profesi_tgl_sip: e.target.value })}
+                              className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs bg-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tanggal Kadaluarsa SIP</label>
+                            <input
+                              type="date"
+                              value={formState.profesi_tgl_kadaluarsa_sip}
+                              onChange={(e) => setFormState({ ...formState, profesi_tgl_kadaluarsa_sip: e.target.value })}
+                              className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs bg-white"
+                            />
+                          </div>
+
+                          <div className="md:col-span-3">
+                            <FileUploadField
+                              label="Upload PDF SIP"
+                              value={formState.profesi_pdf_sip}
+                              onChange={(fn) => setFormState({ ...formState, profesi_pdf_sip: fn })}
+                              id="sip-pdf"
+                            />
                           </div>
                         </div>
                       </div>
@@ -3202,102 +3542,272 @@ const PegawaiView = ({
                 {/* TAB 5: PERNIKAHAN & DATA ANAK */}
                 {activeFormTab === 5 && (
                   <div className="space-y-6">
-                    <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1 mb-3">Pernikahan / Perkawinan Resmi</p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Nomor Akta / Buku Nikah</label>
-                          <input
-                            type="text"
-                            value={formState.nikah_no_buku}
-                            onChange={(e) => setFormState({ ...formState, nikah_no_buku: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Nomor Kutipan Akta Nikah</label>
-                          <input
-                            type="text"
-                            value={formState.nikah_no_kutipan}
-                            onChange={(e) => setFormState({ ...formState, nikah_no_kutipan: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Tanggal Nikah</label>
-                          <input
-                            type="date"
-                            value={formState.nikah_tgl}
-                            onChange={(e) => setFormState({ ...formState, nikah_tgl: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Tempat Nikah</label>
-                          <input
-                            type="text"
-                            value={formState.nikah_tempat}
-                            onChange={(e) => setFormState({ ...formState, nikah_tempat: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
-                          />
-                        </div>
-                        <div className="md:col-span-2">
-                          <FileUploadField
-                            label="Upload PDF Nikah"
-                            value={formState.nikah_pdf}
-                            onChange={(fn) => setFormState({ ...formState, nikah_pdf: fn })}
-                            id="nikah-pdf"
-                          />
-                        </div>
-                      </div>
+                    {/* Status Pernikahan Selector */}
+                    <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200/60">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Status Pernikahan / Perkawinan *</label>
+                      <select
+                        value={formState.status_pernikahan || "Belum Menikah"}
+                        onChange={(e) => setFormState({ ...formState, status_pernikahan: e.target.value })}
+                        className="w-full sm:w-64 px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs font-semibold bg-white"
+                      >
+                        <option value="Belum Menikah">Belum Menikah</option>
+                        <option value="Menikah">Menikah</option>
+                        <option value="Cerai Hidup">Cerai Hidup</option>
+                        <option value="Cerai Mati">Cerai Mati</option>
+                      </select>
                     </div>
 
-                    <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1 mb-3">Data Anak (Maksimal 3 Anak)</p>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Jumlah Anak</label>
-                          <input
-                            type="number"
-                            min={0}
-                            max={3}
-                            value={formState.jumlah_anak}
-                            onChange={(e) => setFormState({ ...formState, jumlah_anak: parseInt(e.target.value) || 0 })}
-                            className="w-24 px-3 py-2 border border-slate-200 rounded text-xs bg-white"
-                          />
-                        </div>
+                    {/* CONDITION 1: BELUM MENIKAH */}
+                    {(formState.status_pernikahan === "Belum Menikah" || !formState.status_pernikahan) && (
+                      <div className="bg-slate-50 border border-dashed border-slate-200 rounded-xl p-8 text-center">
+                        <Heart className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                        <h4 className="text-slate-700 font-bold text-xs uppercase tracking-wide">Status: Belum Menikah</h4>
+                        <p className="text-slate-400 text-[11px] mt-1">Data pasangan, dokumen pernikahan, dan data anak tidak diperlukan.</p>
+                      </div>
+                    )}
 
-                        {formState.jumlah_anak > 0 && (
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {[...Array(Math.min(formState.jumlah_anak, 3))].map((_, idx) => (
-                              <div key={idx} className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
-                                <p className="text-[10px] font-bold text-slate-500 uppercase">Anak Ke-{idx + 1}</p>
-                                <div>
-                                  <label className="block text-[10px] font-semibold text-slate-400 mb-1">Nama Lengkap Anak</label>
-                                  <input
-                                    type="text"
-                                    required
-                                    value={formState.anak[idx]?.nama || ""}
-                                    onChange={(e) => handleChildChange(idx, "nama", e.target.value)}
-                                    className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs bg-white"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-[10px] font-semibold text-slate-400 mb-1">Tanggal Lahir Anak</label>
-                                  <input
-                                    type="date"
-                                    required
-                                    value={formState.anak[idx]?.tgl_lahir || ""}
-                                    onChange={(e) => handleChildChange(idx, "tgl_lahir", e.target.value)}
-                                    className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs bg-white"
-                                  />
-                                </div>
-                              </div>
-                            ))}
+                    {/* CONDITION 2: MENIKAH */}
+                    {formState.status_pernikahan === "Menikah" && (
+                      <div className="space-y-6 animate-fadeIn">
+                        {/* Data Pasangan */}
+                        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-xs space-y-4">
+                          <p className="text-xs font-bold text-indigo-900 uppercase tracking-widest border-b border-slate-100 pb-2 flex items-center gap-2">
+                            <Heart className="w-4 h-4 text-indigo-500" /> Data Pasangan (Suami / Istri)
+                          </p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Nama Lengkap Pasangan</label>
+                              <input
+                                type="text"
+                                value={formState.pasangan_nama || ""}
+                                onChange={(e) => setFormState({ ...formState, pasangan_nama: e.target.value })}
+                                className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
+                                placeholder="Masukkan nama pasangan"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Pekerjaan Pasangan</label>
+                              <input
+                                type="text"
+                                value={formState.pasangan_pekerjaan || ""}
+                                onChange={(e) => setFormState({ ...formState, pasangan_pekerjaan: e.target.value })}
+                                className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
+                                placeholder="Masukkan pekerjaan"
+                              />
+                            </div>
                           </div>
-                        )}
+                        </div>
+
+                        {/* Data Pernikahan */}
+                        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-xs space-y-4">
+                          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100 pb-2">Dokumen & Detail Pernikahan</p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Nomor Akta / Buku Nikah</label>
+                              <input
+                                type="text"
+                                value={formState.nikah_no_buku || ""}
+                                onChange={(e) => setFormState({ ...formState, nikah_no_buku: e.target.value })}
+                                className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Nomor Kutipan Akta Nikah</label>
+                              <input
+                                type="text"
+                                value={formState.nikah_no_kutipan || ""}
+                                onChange={(e) => setFormState({ ...formState, nikah_no_kutipan: e.target.value })}
+                                className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Tanggal Nikah</label>
+                              <input
+                                type="date"
+                                value={formState.nikah_tgl || ""}
+                                onChange={(e) => setFormState({ ...formState, nikah_tgl: e.target.value })}
+                                className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Tempat Nikah</label>
+                              <input
+                                type="text"
+                                value={formState.nikah_tempat || ""}
+                                onChange={(e) => setFormState({ ...formState, nikah_tempat: e.target.value })}
+                                className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
+                              />
+                            </div>
+                            <div className="md:col-span-2">
+                              <FileUploadField
+                                label="Upload PDF Buku Nikah"
+                                value={formState.nikah_pdf}
+                                onChange={(fn) => setFormState({ ...formState, nikah_pdf: fn })}
+                                id="nikah-pdf"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Data Anak */}
+                        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-xs space-y-4">
+                          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100 pb-2">Data Anak (Maksimal 3 Anak)</p>
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Jumlah Anak</label>
+                              <input
+                                type="number"
+                                min={0}
+                                max={3}
+                                value={formState.jumlah_anak || 0}
+                                onChange={(e) => setFormState({ ...formState, jumlah_anak: parseInt(e.target.value) || 0 })}
+                                className="w-24 px-3 py-2 border border-slate-200 rounded text-xs bg-white"
+                              />
+                            </div>
+
+                            {(formState.jumlah_anak || 0) > 0 && (
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {[...Array(Math.min(formState.jumlah_anak || 0, 3))].map((_, idx) => (
+                                  <div key={idx} className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
+                                    <p className="text-[10px] font-bold text-slate-500 uppercase">Anak Ke-{idx + 1}</p>
+                                    <div>
+                                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">Nama Lengkap Anak</label>
+                                      <input
+                                        type="text"
+                                        required
+                                        value={formState.anak[idx]?.nama || ""}
+                                        onChange={(e) => handleChildChange(idx, "nama", e.target.value)}
+                                        className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs bg-white"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">Tanggal Lahir Anak</label>
+                                      <input
+                                        type="date"
+                                        required
+                                        value={formState.anak[idx]?.tgl_lahir || ""}
+                                        onChange={(e) => handleChildChange(idx, "tgl_lahir", e.target.value)}
+                                        className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs bg-white"
+                                      />
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {/* CONDITION 3: CERAI HIDUP */}
+                    {formState.status_pernikahan === "Cerai Hidup" && (
+                      <div className="space-y-6 animate-fadeIn">
+                        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-xs space-y-4">
+                          <p className="text-xs font-bold text-rose-900 uppercase tracking-widest border-b border-slate-100 pb-2 flex items-center gap-2">
+                            <Heart className="w-4 h-4 text-rose-500" /> Riwayat Pasangan & Dokumen Perceraian (Cerai Hidup)
+                          </p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Nama Mantan Pasangan</label>
+                              <input
+                                type="text"
+                                value={formState.pasangan_nama || ""}
+                                onChange={(e) => setFormState({ ...formState, pasangan_nama: e.target.value })}
+                                className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
+                                placeholder="Masukkan nama mantan pasangan"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Pekerjaan Terakhir Pasangan</label>
+                              <input
+                                type="text"
+                                value={formState.pasangan_pekerjaan || ""}
+                                onChange={(e) => setFormState({ ...formState, pasangan_pekerjaan: e.target.value })}
+                                className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
+                                placeholder="Pekerjaan mantan pasangan"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Nomor Akta Cerai *</label>
+                              <input
+                                type="text"
+                                value={formState.cerai_no_akta || ""}
+                                onChange={(e) => setFormState({ ...formState, cerai_no_akta: e.target.value })}
+                                className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
+                                placeholder="Contoh: No. 124/AC/2024"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Tanggal Perceraian Resmi *</label>
+                              <input
+                                type="date"
+                                value={formState.cerai_tgl || ""}
+                                onChange={(e) => setFormState({ ...formState, cerai_tgl: e.target.value })}
+                                className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
+                              />
+                            </div>
+                            <div className="md:col-span-2">
+                              <FileUploadField
+                                label="Upload PDF Akta Cerai *"
+                                value={formState.cerai_hidup_pdf}
+                                onChange={(fn) => setFormState({ ...formState, cerai_hidup_pdf: fn })}
+                                id="cerai-hidup-pdf"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* CONDITION 4: CERAI MATI */}
+                    {formState.status_pernikahan === "Cerai Mati" && (
+                      <div className="space-y-6 animate-fadeIn">
+                        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-xs space-y-4">
+                          <p className="text-xs font-bold text-amber-900 uppercase tracking-widest border-b border-slate-100 pb-2 flex items-center gap-2">
+                            <Heart className="w-4 h-4 text-slate-400" /> Data Pasangan & Dokumen Akta Kematian (Cerai Mati)
+                          </p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Nama Mendiang Pasangan</label>
+                              <input
+                                type="text"
+                                value={formState.pasangan_nama || ""}
+                                onChange={(e) => setFormState({ ...formState, pasangan_nama: e.target.value })}
+                                className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
+                                placeholder="Masukkan nama mendiang"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Nomor Akta Kematian *</label>
+                              <input
+                                type="text"
+                                value={formState.kematian_no_akta || ""}
+                                onChange={(e) => setFormState({ ...formState, kematian_no_akta: e.target.value })}
+                                className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
+                                placeholder="Contoh: No. 45/KM/2025"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Tanggal Meninggal Dunia *</label>
+                              <input
+                                type="date"
+                                value={formState.kematian_tgl || ""}
+                                onChange={(e) => setFormState({ ...formState, kematian_tgl: e.target.value })}
+                                className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
+                              />
+                            </div>
+                            <div className="md:col-span-2">
+                              <FileUploadField
+                                label="Upload PDF Akta Kematian *"
+                                value={formState.cerai_mati_pdf}
+                                onChange={(fn) => setFormState({ ...formState, cerai_mati_pdf: fn })}
+                                id="cerai-mati-pdf"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -3384,13 +3894,20 @@ const PegawaiView = ({
                             className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
                           />
                         </div>
+                        <SearchableSelect
+                          label="Nama Bank *"
+                          value={formState.bank_nama || ""}
+                          onChange={(val) => setFormState({ ...formState, bank_nama: val })}
+                          options={masterDataStore.jenis_nama_bank?.items || []}
+                          placeholder="Pilih atau cari bank..."
+                        />
                         <div>
-                          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Nomor Rekening Bank</label>
+                          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Nomor Rekening Bank *</label>
                           <input
                             type="text"
-                            value={formState.no_rekening}
-                            placeholder="Bank & No Rekening"
-                            onChange={(e) => setFormState({ ...formState, no_rekening: e.target.value })}
+                            value={formState.bank_rekening_num || ""}
+                            placeholder="Contoh: 1310023456789"
+                            onChange={(e) => setFormState({ ...formState, bank_rekening_num: e.target.value })}
                             className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:outline-none focus:border-indigo-500 text-xs bg-white"
                           />
                         </div>
@@ -3434,7 +3951,7 @@ const PegawaiView = ({
               </form>
 
               {/* Wizard Footer Controls */}
-              <div className="p-5 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
+              <div className="p-5 border-t border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">
                 <div className="flex gap-2">
                   {activeFormTab > 1 && (
                     <button
@@ -3714,25 +4231,27 @@ const NonPegawaiView = ({
                           {row.status_aktif}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right whitespace-nowrap space-x-2">
-                        <button
-                          onClick={() => openDetailModal(row)}
-                          className="text-slate-600 hover:text-slate-900 font-bold text-xs transition-colors cursor-pointer"
-                        >
-                          Detail
-                        </button>
-                        <button
-                          onClick={() => openEditModal(itemIndex, row)}
-                          className="text-indigo-600 hover:text-indigo-800 font-bold text-xs transition-colors cursor-pointer"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => onDeleteNonPegawai(itemIndex)}
-                          className="text-rose-600 hover:text-rose-800 font-bold text-xs transition-colors cursor-pointer"
-                        >
-                          Hapus
-                        </button>
+                      <td className="px-4 py-3 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-2">
+                          <Action3DButton
+                            icon={Eye}
+                            onClick={() => openDetailModal(row)}
+                            color="slate"
+                            title="Detail"
+                          />
+                          <Action3DButton
+                            icon={Edit}
+                            onClick={() => openEditModal(itemIndex, row)}
+                            color="indigo"
+                            title="Edit"
+                          />
+                          <Action3DButton
+                            icon={Trash2}
+                            onClick={() => onDeleteNonPegawai(itemIndex)}
+                            color="rose"
+                            title="Hapus"
+                          />
+                        </div>
                       </td>
                     </tr>
                   );
@@ -3912,7 +4431,7 @@ const NonPegawaiView = ({
               className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden border border-slate-200 flex flex-col max-h-[90vh]"
             >
               {/* Header */}
-              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
                 <div>
                   <h3 className="font-bold text-slate-900 text-sm">
                     {editingIndex !== null ? "Edit Data Non-Pegawai" : "Tambah Data Non-Pegawai Baru"}
@@ -4857,22 +5376,20 @@ const AgendaPimpinanView = ({
                         </td>
                         <td className="px-5 py-3.5 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            <button
+                            <Action3DButton
+                              icon={Eye}
                               onClick={() => handleOpenDetail(item)}
-                              className="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-slate-800 cursor-pointer transition-colors"
+                              color="slate"
                               title="Buka Detail"
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                            </button>
-                            <button
+                            />
+                            <Action3DButton
+                              icon={Edit}
                               onClick={() => handleOpenEdit(originalIndex, item)}
-                              className="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-slate-800 cursor-pointer transition-colors"
+                              color="indigo"
                               title="Ubah Agenda"
-                            >
-                              <Edit className="w-3.5 h-3.5" />
-                            </button>
-
-                            <button
+                            />
+                            <Action3DButton
+                              icon={Archive}
                               onClick={() => {
                                 if (item.is_archived) {
                                   onRestore(originalIndex);
@@ -4880,19 +5397,15 @@ const AgendaPimpinanView = ({
                                   onSoftDelete(originalIndex);
                                 }
                               }}
-                              className="p-1 hover:bg-slate-100 rounded text-amber-500 hover:text-amber-700 cursor-pointer transition-colors"
+                              color="amber"
                               title={item.is_archived ? "Kembalikan dari Arsip" : "Arsipkan (Soft Delete)"}
-                            >
-                              <Archive className="w-3.5 h-3.5" />
-                            </button>
-
-                            <button
+                            />
+                            <Action3DButton
+                              icon={Trash2}
                               onClick={() => onDelete(originalIndex)}
-                              className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-rose-600 cursor-pointer transition-colors"
+                              color="rose"
                               title="Hapus Permanen"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                            />
                           </div>
                         </td>
                       </tr>
@@ -5370,22 +5883,20 @@ const KontakRelasiView = ({
                       {item.kategori}
                     </span>
                     <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
-                      <button
+                      <Action3DButton
+                        icon={Eye}
                         onClick={() => handleOpenDetail(item)}
-                        className="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-slate-800 cursor-pointer"
+                        color="slate"
                         title="Buka Detail"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                      </button>
-                      <button
+                      />
+                      <Action3DButton
+                        icon={Edit}
                         onClick={() => handleOpenEdit(originalIndex, item)}
-                        className="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-slate-800 cursor-pointer"
+                        color="indigo"
                         title="Ubah Kontak"
-                      >
-                        <Edit className="w-3.5 h-3.5" />
-                      </button>
-
-                      <button
+                      />
+                      <Action3DButton
+                        icon={Archive}
                         onClick={() => {
                           if (item.is_archived) {
                             onRestore(originalIndex);
@@ -5393,19 +5904,15 @@ const KontakRelasiView = ({
                             onSoftDelete(originalIndex);
                           }
                         }}
-                        className="p-1 hover:bg-slate-100 rounded text-amber-500 hover:text-amber-700 cursor-pointer"
+                        color="amber"
                         title={item.is_archived ? "Pulihkan Kontak" : "Arsipkan (Soft Delete)"}
-                      >
-                        <Archive className="w-3.5 h-3.5" />
-                      </button>
-
-                      <button
+                      />
+                      <Action3DButton
+                        icon={Trash2}
                         onClick={() => onDelete(originalIndex)}
-                        className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-rose-600 cursor-pointer"
+                        color="rose"
                         title="Hapus Permanen"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      />
                     </div>
                   </div>
 
@@ -6411,20 +6918,18 @@ const RiwayatPegawaiView = ({
 
                       <td className="px-5 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button
+                          <Action3DButton
+                            icon={Edit}
                             onClick={() => handleOpenEdit(originalIndex >= 0 ? originalIndex : idx, row)}
-                            className="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-slate-800 cursor-pointer transition-colors"
+                            color="indigo"
                             title="Ubah Data"
-                          >
-                            <Edit className="w-3.5 h-3.5" />
-                          </button>
-                          <button
+                          />
+                          <Action3DButton
+                            icon={Trash2}
                             onClick={() => handleDelete(originalIndex >= 0 ? originalIndex : idx)}
-                            className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-rose-600 cursor-pointer transition-colors"
+                            color="rose"
                             title="Hapus Data"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          />
                         </div>
                       </td>
                     </tr>
@@ -7286,32 +7791,62 @@ const DashboardView = ({
         </div>
       </div>
 
-      {/* Quick Shortcuts */}
-      <div className="bg-white/60 backdrop-blur-xl rounded-3xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6">
-        <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
-          <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
-          Pintasan Cepat Dashboard
+      {/* Quick Shortcuts - 3D GoPay Style */}
+      <div className="bg-[#121212] rounded-3xl p-6 shadow-xl relative overflow-hidden border border-[#2a2a2a]">
+        {/* Subtle background glow */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px]"></div>
+        
+        <h3 className="text-sm font-bold text-white mb-5 flex items-center gap-2">
+          <Zap className="w-4 h-4 text-amber-400 fill-amber-400" />
+          Rekomendasi Pintasan
         </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        
+        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-6">
           {[
-            { label: "Kelola Pegawai", tab: "pegawai", icon: Users, color: "bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-100 hover:text-indigo-800" },
-            { label: "Tambah Non-Pegawai", tab: "non_pegawai", icon: UserPlus, color: "bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100 hover:text-emerald-800" },
-            { label: "Master Referensi", tab: "master_data", icon: Database, color: "bg-purple-50 text-purple-700 border-purple-100 hover:bg-purple-100 hover:text-purple-800" },
-            { label: "Surat Masuk", tab: "surat_masuk", icon: Mail, color: "bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-100 hover:text-amber-800" },
-            { label: "Jadwal Agenda", tab: "agenda", icon: CalendarDays, color: "bg-rose-50 text-rose-700 border-rose-100 hover:bg-rose-100 hover:text-rose-800" },
-            { label: "Pengaturan Sistem", tab: "pengaturan", icon: Settings, color: "bg-slate-50 text-slate-700 border-slate-100 hover:bg-slate-100 hover:text-slate-800" },
-          ].map((shortcut, idx) => (
-            <button
-              key={idx}
-              onClick={() => onNavigate(shortcut.tab)}
-              className={`flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all cursor-pointer hover:shadow-xs group ${shortcut.color}`}
-            >
-              <div className="p-2.5 rounded-lg bg-white shadow-xs group-hover:scale-110 transition-transform mb-2">
-                <shortcut.icon className="w-5 h-5 shrink-0" />
-              </div>
-              <span className="text-[11px] font-bold tracking-tight">{shortcut.label}</span>
-            </button>
-          ))}
+            { label: "Pegawai", tab: "pegawai", icon: Users, color: "blue" },
+            { label: "Non-Pegawai", tab: "non_pegawai", icon: UserPlus, color: "emerald" },
+            { label: "Master Data", tab: "master_data", icon: Database, color: "purple" },
+            { label: "Surat Masuk", tab: "surat_masuk", icon: Mail, color: "amber" },
+            { label: "Agenda", tab: "agenda", icon: CalendarDays, color: "rose" },
+            { label: "Pengaturan", tab: "pengaturan", icon: Settings, color: "slate" },
+          ].map((shortcut, idx) => {
+            const colors = {
+              blue: { bg: "bg-blue-500", edge: "bg-blue-700" },
+              emerald: { bg: "bg-emerald-500", edge: "bg-emerald-700" },
+              purple: { bg: "bg-purple-500", edge: "bg-purple-700" },
+              amber: { bg: "bg-amber-500", edge: "bg-amber-700" },
+              rose: { bg: "bg-rose-500", edge: "bg-rose-700" },
+              slate: { bg: "bg-slate-500", edge: "bg-slate-700" }
+            }[shortcut.color as "blue" | "emerald" | "purple" | "amber" | "rose" | "slate"];
+
+            return (
+              <button
+                key={idx}
+                onClick={() => onNavigate(shortcut.tab)}
+                className="flex flex-col items-center gap-3 cursor-pointer group outline-none focus:outline-none"
+              >
+                {/* 3D Tile Container */}
+                <div className="w-[72px] h-[72px] rounded-[18px] bg-[#1c1c1e] border border-[#2c2c2e] shadow-[inset_0_2px_10px_rgba(255,255,255,0.05),0_8px_16px_rgba(0,0,0,0.4)] flex items-center justify-center relative transition-colors duration-300 group-hover:bg-[#242427]">
+                  
+                  {/* 3D Icon Extrusion Effect */}
+                  <div className="w-[42px] h-[42px] relative group-hover:-translate-y-1 group-hover:scale-105 group-active:translate-y-0 group-active:scale-95 transition-all duration-300 flex items-center justify-center">
+                    {/* Edge / Depth */}
+                    <div className={`absolute inset-0 rounded-xl ${colors.edge} translate-y-1.5`}></div>
+                    {/* Top Face */}
+                    <div className={`absolute inset-0 rounded-xl ${colors.bg} flex items-center justify-center border border-white/20 shadow-[inset_0_1px_2px_rgba(255,255,255,0.5)]`}>
+                      <shortcut.icon className="w-5 h-5 text-white drop-shadow-md" strokeWidth={2.5} />
+                    </div>
+                  </div>
+  
+                </div>
+                
+                {/* Label */}
+                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white transition-colors text-center w-full max-w-[80px] leading-tight">
+                  {shortcut.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -7877,22 +8412,20 @@ const ArsipDigitalView = ({
                       </td>
                       <td className="px-5 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button
+                          <Action3DButton
+                            icon={Eye}
                             onClick={() => handleOpenDetail(item)}
-                            className="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-slate-800 cursor-pointer transition-colors"
-                            title="Buka Detail (Jendela Mengembang)"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button
+                            color="slate"
+                            title="Buka Detail"
+                          />
+                          <Action3DButton
+                            icon={Edit}
                             onClick={() => handleOpenEdit(originalIndex, item)}
-                            className="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-slate-800 cursor-pointer transition-colors"
+                            color="indigo"
                             title="Ubah Arsip"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-
-                          <button
+                          />
+                          <Action3DButton
+                            icon={Archive}
                             onClick={() => {
                               if (item.is_archived) {
                                 onRestore(originalIndex);
@@ -7900,19 +8433,15 @@ const ArsipDigitalView = ({
                                 onSoftDelete(originalIndex);
                               }
                             }}
-                            className="p-1 hover:bg-slate-100 rounded text-amber-500 hover:text-amber-700 cursor-pointer transition-colors"
+                            color="amber"
                             title={item.is_archived ? "Pulihkan dari Arsip Sampah" : "Pindahkan ke Arsip Sampah (Soft Delete)"}
-                          >
-                            <Archive className="w-4 h-4" />
-                          </button>
-
-                          <button
+                          />
+                          <Action3DButton
+                            icon={Trash2}
                             onClick={() => onDelete(originalIndex)}
-                            className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-rose-600 cursor-pointer transition-colors"
+                            color="rose"
                             title="Hapus Permanen"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          />
                         </div>
                       </td>
                     </tr>
@@ -8323,6 +8852,27 @@ export default function App() {
       });
     }
   };
+
+  // Stateful Generic Tables
+  const [asuransiList, setAsuransiList] = useState(asuransiData);
+  const handleAddAsuransi = (item: any) => setAsuransiList((prev) => [...prev, item]);
+  const handleEditAsuransi = (updatedItem: any) => setAsuransiList((prev) => prev.map((x) => (x as any).id === updatedItem.id || x.no_bpjs === updatedItem.no_bpjs ? updatedItem : x));
+  const handleDeleteAsuransi = (item: any) => setAsuransiList((prev) => prev.filter((x) => x.no_bpjs !== item.no_bpjs && (x as any).id !== item.id));
+
+  const [suratMasukList, setSuratMasukList] = useState(suratMasukData);
+  const handleAddSuratMasuk = (item: any) => setSuratMasukList((prev) => [...prev, item]);
+  const handleEditSuratMasuk = (updatedItem: any) => setSuratMasukList((prev) => prev.map((x) => (x as any).id === updatedItem.id || x.no_surat === updatedItem.no_surat ? updatedItem : x));
+  const handleDeleteSuratMasuk = (item: any) => setSuratMasukList((prev) => prev.filter((x) => x.no_surat !== item.no_surat && (x as any).id !== item.id));
+
+  const [disposisiList, setDisposisiList] = useState(disposisiData);
+  const handleAddDisposisi = (item: any) => setDisposisiList((prev) => [...prev, item]);
+  const handleEditDisposisi = (updatedItem: any) => setDisposisiList((prev) => prev.map((x) => (x as any).id === updatedItem.id || x.no_surat === updatedItem.no_surat ? updatedItem : x));
+  const handleDeleteDisposisi = (item: any) => setDisposisiList((prev) => prev.filter((x) => x.no_surat !== item.no_surat && (x as any).id !== item.id));
+
+  const [laporanList, setLaporanList] = useState(laporanData);
+  const handleAddLaporan = (item: any) => setLaporanList((prev) => [...prev, item]);
+  const handleEditLaporan = (updatedItem: any) => setLaporanList((prev) => prev.map((x) => (x as any).id === updatedItem.id || x.jenis === updatedItem.jenis ? updatedItem : x));
+  const handleDeleteLaporan = (item: any) => setLaporanList((prev) => prev.filter((x) => x.jenis !== item.jenis && (x as any).id !== item.id));
 
   // Stateful Riwayat Cuti
   const [riwayatCutiList, setRiwayatCutiList] = useState(INITIAL_RIWAYAT_CUTI);
@@ -8817,7 +9367,10 @@ export default function App() {
           <GenericTable
             title="Asuransi Pegawai"
             columns={asuransiCols}
-            data={asuransiData}
+            data={asuransiList}
+            onAdd={handleAddAsuransi}
+            onEdit={handleEditAsuransi}
+            onDelete={handleDeleteAsuransi}
           />
         );
       case "surat_masuk":
@@ -8825,7 +9378,12 @@ export default function App() {
           <GenericTable
             title="Surat Masuk"
             columns={suratMasukCols}
-            data={suratMasukData}
+            data={suratMasukList}
+            onAdd={handleAddSuratMasuk}
+            onEdit={handleEditSuratMasuk}
+            onDelete={handleDeleteSuratMasuk}
+            showPrint={true}
+            showPreview={true}
           />
         );
       case "disposisi":
@@ -8833,7 +9391,12 @@ export default function App() {
           <GenericTable
             title="Disposisi Surat"
             columns={disposisiCols}
-            data={disposisiData}
+            data={disposisiList}
+            onAdd={handleAddDisposisi}
+            onEdit={handleEditDisposisi}
+            onDelete={handleDeleteDisposisi}
+            showPrint={true}
+            showPreview={true}
           />
         );
       case "agenda":
@@ -8877,7 +9440,10 @@ export default function App() {
           <GenericTable
             title="Laporan Sistem"
             columns={laporanCols}
-            data={laporanData}
+            data={laporanList}
+            onAdd={handleAddLaporan}
+            onEdit={handleEditLaporan}
+            onDelete={handleDeleteLaporan}
           />
         );
       case "pengaturan":
@@ -10526,9 +11092,9 @@ export default function App() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden min-w-0 relative z-10">
+      <main className="flex-1 flex flex-col h-screen overflow-hidden min-w-0 relative">
         {/* Top Header */}
-        <header className="bg-white/70 backdrop-blur-xl h-16 border-b border-white/50 shadow-[0_4px_24px_rgba(0,0,0,0.02)] flex items-center justify-between px-4 sm:px-8 shrink-0">
+        <header className="bg-white/70 backdrop-blur-xl h-16 border-b border-white/50 shadow-[0_4px_24px_rgba(0,0,0,0.02)] flex items-center justify-between px-4 sm:px-8 shrink-0 relative z-50">
           <div className="flex items-center">
             <button
               className="lg:hidden p-2 -ml-2 mr-2 text-slate-500 hover:bg-white/50 rounded-lg"
