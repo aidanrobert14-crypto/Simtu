@@ -1197,6 +1197,7 @@ const suratMasukCols = [
   { header: "Tanggal", accessor: "tanggal" },
   { header: "Perihal", accessor: "perihal" },
   { header: "Status", accessor: "status" },
+  { header: "Berkas Surat", accessor: "file_name", type: "file" },
 ];
 const suratMasukData = [
   {
@@ -1205,6 +1206,7 @@ const suratMasukData = [
     tanggal: "01 Okt 2024",
     perihal: "Undangan Rapat Koordinasi",
     status: "Didisposisikan",
+    file_name: "undangan_rakor_pendidikan.pdf",
   },
   {
     no_surat: "002/B/2024",
@@ -1212,6 +1214,7 @@ const suratMasukData = [
     tanggal: "05 Okt 2024",
     perihal: "Edaran Aturan Kepegawaian",
     status: "Baru",
+    file_name: "aturan_kepegawaian_kemendagri.pdf",
   },
 ];
 
@@ -1220,6 +1223,7 @@ const disposisiCols = [
   { header: "Diteruskan Ke", accessor: "penerima" },
   { header: "Instruksi", accessor: "instruksi" },
   { header: "Tgl Disposisi", accessor: "tanggal" },
+  { header: "Berkas Lampiran", accessor: "file_name", type: "file" },
 ];
 const disposisiData = [
   {
@@ -1227,6 +1231,7 @@ const disposisiData = [
     penerima: "Kasubag Umum",
     instruksi: "Segera tindak lanjuti dan siapkan materi",
     tanggal: "02 Okt 2024",
+    file_name: "lampiran_disposisi_01.pdf",
   },
 ];
 
@@ -1389,6 +1394,10 @@ const GenericTable = ({
   const [editingItem, setEditingItem] = useState<any>(null);
   const [formData, setFormData] = useState<any>({});
 
+  const [isPrintOpen, setIsPrintOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [selectedActionItem, setSelectedActionItem] = useState<any>(null);
+
   const handleOpenModal = (item?: any) => {
     if (item) {
       setEditingItem(item);
@@ -1418,11 +1427,13 @@ const GenericTable = ({
   };
 
   const handlePrint = (item: any) => {
-    alert(`Mencetak data:\n${JSON.stringify(item, null, 2)}`);
+    setSelectedActionItem(item);
+    setIsPrintOpen(true);
   };
 
   const handlePreview = (item: any) => {
-    alert(`Menampilkan preview untuk:\n${JSON.stringify(item, null, 2)}`);
+    setSelectedActionItem(item);
+    setIsPreviewOpen(true);
   };
 
   return (
@@ -1476,7 +1487,7 @@ const GenericTable = ({
                 {columns.map((col, cIdx) => (
                   <td
                     key={cIdx}
-                    className="px-4 py-3 text-slate-700 whitespace-nowrap"
+                    className="px-4 py-3 text-slate-700 whitespace-nowrap font-medium"
                   >
                     {col.accessor === "status" ? (
                       <span
@@ -1490,8 +1501,17 @@ const GenericTable = ({
                               : "bg-indigo-100 text-indigo-700"
                         }`}
                       >
-                        {row[col.accessor]}
+                        {row[col.accessor] || "Baru"}
                       </span>
+                    ) : col.type === "file" ? (
+                      row[col.accessor] ? (
+                        <div className="flex items-center gap-1.5 text-xs text-indigo-600 font-bold hover:underline cursor-pointer" onClick={() => handlePreview(row)}>
+                          <FileText className="w-3.5 h-3.5 text-indigo-500" />
+                          <span>{row[col.accessor]}</span>
+                        </div>
+                      ) : (
+                        <span className="text-slate-400 italic">Belum diunggah</span>
+                      )
                     ) : (
                       row[col.accessor]
                     )}
@@ -1563,6 +1583,7 @@ const GenericTable = ({
       </div>
     </div>
     
+    {/* Form Add/Edit Modal */}
     {isModalOpen && (
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
@@ -1576,18 +1597,345 @@ const GenericTable = ({
             {columns.map((col, idx) => (
               <div key={idx} className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{col.header}</label>
-                <input
-                  type="text"
-                  value={formData[col.accessor] || ""}
-                  onChange={(e) => setFormData({ ...formData, [col.accessor]: e.target.value })}
-                  className="w-full border border-slate-200 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
-                />
+                {col.type === "file" ? (
+                  <div className="space-y-2">
+                    {formData[col.accessor] && (
+                      <div className="flex items-center justify-between p-2 border border-emerald-200 bg-emerald-50 rounded text-xs text-emerald-800">
+                        <div className="flex items-center gap-2">
+                          <FileText className="w-4 h-4 text-emerald-600" />
+                          <span className="font-medium">{formData[col.accessor]}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, [col.accessor]: "" })}
+                          className="text-emerald-600 hover:text-emerald-800 font-bold text-xs"
+                        >
+                          Hapus
+                        </button>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-center w-full">
+                      <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-200 border-dashed rounded-lg cursor-pointer bg-slate-50 hover:bg-slate-100/80 transition-colors">
+                        <div className="flex flex-col items-center justify-center pt-3 pb-3 text-center px-4">
+                          <Upload className="w-5 h-5 mb-1 text-slate-400 animate-bounce" />
+                          <p className="text-xs text-slate-500 font-semibold">Klik untuk unggah surat</p>
+                          <p className="text-[9px] text-slate-400 mt-0.5">PDF, DOC, JPG (Maks 10MB)</p>
+                        </div>
+                        <input
+                          type="file"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setFormData({ ...formData, [col.accessor]: file.name });
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                ) : (
+                  <input
+                    type="text"
+                    value={formData[col.accessor] || ""}
+                    onChange={(e) => setFormData({ ...formData, [col.accessor]: e.target.value })}
+                    className="w-full border border-slate-200 rounded px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50"
+                  />
+                )}
               </div>
             ))}
           </div>
           <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
             <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors">Batal</button>
             <button onClick={handleSave} className="px-4 py-2 rounded text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-sm">{editingItem ? "Simpan Perubahan" : "Simpan"}</button>
+          </div>
+        </motion.div>
+      </div>
+    )}
+
+    {/* Print Slip Overlay Modal */}
+    {isPrintOpen && selectedActionItem && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
+            <div className="flex items-center gap-2">
+              <Printer className="w-5 h-5 text-emerald-600" />
+              <h3 className="font-bold text-slate-800">Cetak Lembar Dokumen</h3>
+            </div>
+            <button onClick={() => setIsPrintOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          
+          <div className="p-8 overflow-y-auto bg-slate-100 flex justify-center">
+            {/* The Print Paper Sheet */}
+            <div className="bg-white w-[100%] max-w-[21cm] p-8 border border-slate-200 rounded shadow-md text-slate-800 text-xs font-serif leading-relaxed relative">
+              {/* Kop Surat Header */}
+              <div className="text-center border-b-2 border-double border-slate-800 pb-4 mb-6">
+                <h4 className="text-sm font-bold tracking-widest uppercase">Pemerintah Kabupaten Sehat Sejahtera</h4>
+                <h3 className="text-base font-extrabold uppercase mt-0.5">RSUD KELAS A BHAKTI HUSADA</h3>
+                <p className="text-[10px] font-sans text-slate-500 mt-1 italic">Jl. Kesehatan No. 12, Kota Damai • Telp (021) 555-0192 • Email: info@rsudbhaktihusada.go.id</p>
+              </div>
+
+              {/* Title */}
+              <div className="text-center mb-6">
+                <h2 className="text-sm font-bold uppercase underline tracking-wide">LEMBAR DISPOSISI & PENERIMAAN SURAT</h2>
+                <p className="text-[10px] font-mono text-slate-500 mt-0.5">Sistem Tata Usaha & Kepegawaian Digital</p>
+              </div>
+
+              {/* Letter details */}
+              <div className="grid grid-cols-2 gap-4 mb-6 font-sans">
+                <div className="space-y-1.5">
+                  <div className="flex"><span className="w-24 text-slate-500 font-medium">No. Surat:</span><span className="font-bold text-slate-900">{selectedActionItem.no_surat}</span></div>
+                  <div className="flex"><span className="w-24 text-slate-500 font-medium">Tanggal:</span><span className="text-slate-900">{selectedActionItem.tanggal}</span></div>
+                  <div className="flex"><span className="w-24 text-slate-500 font-medium">Pengirim:</span><span className="text-slate-900 font-medium">{selectedActionItem.pengirim || "RSUD Bhakti Husada"}</span></div>
+                </div>
+                <div className="space-y-1.5 border-l border-slate-200 pl-4">
+                  <div className="flex"><span className="w-24 text-slate-500 font-medium">Penerima/Tujuan:</span><span className="text-slate-900 font-medium">{selectedActionItem.penerima || "Sub Bagian Kepegawaian"}</span></div>
+                  <div className="flex"><span className="w-24 text-slate-500 font-medium">Status Surat:</span><span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold inline-block">{selectedActionItem.status || "Didisposisikan"}</span></div>
+                  <div className="flex"><span className="w-24 text-slate-500 font-medium">Berkas Surat:</span><span className="text-slate-900 italic font-medium">{selectedActionItem.file_name || "Tanpa Berkas"}</span></div>
+                </div>
+              </div>
+
+              <div className="border border-slate-300 p-4 rounded mb-6 font-sans bg-slate-50/50">
+                <h5 className="font-bold text-slate-700 uppercase text-[10px] tracking-wider mb-2 border-b border-slate-200 pb-1">Perihal / Instruksi Pimpinan:</h5>
+                <p className="text-xs text-slate-800 leading-relaxed italic">
+                  &ldquo;{selectedActionItem.perihal || selectedActionItem.instruksi || "Segera dipelajari, tindaklanjuti dan simpan sebagai arsip kepegawaian resmi."}&rdquo;
+                </p>
+              </div>
+
+              {/* Disposition table fields */}
+              <div className="border border-slate-300 rounded mb-8 font-sans overflow-hidden">
+                <div className="grid grid-cols-2 bg-slate-50 font-bold border-b border-slate-300 p-2 text-[10px] uppercase text-slate-500">
+                  <div>Diteruskan Kepada:</div>
+                  <div className="border-l border-slate-300 pl-2">Petunjuk/Instruksi khusus:</div>
+                </div>
+                <div className="grid grid-cols-2 p-2 h-20 text-xs">
+                  <div className="space-y-1 text-[10px] text-slate-400">
+                    <div>[  ] Kepala Bidang Medis</div>
+                    <div>[  ] Kepala Sub Bagian Umum</div>
+                    <div>[  ] Koordinator Tata Usaha</div>
+                    <div>[✓] Staff Kepegawaian Operasional</div>
+                  </div>
+                  <div className="border-l border-slate-300 pl-2 text-[10px] text-slate-400">
+                    <div>[✓] Selesaikan dengan segera</div>
+                    <div>[  ] Siapkan draf balasan</div>
+                    <div>[  ] Koordinasikan dengan unit terkait</div>
+                    <div>[  ] Pertahankan arsip kepegawaian</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Signatures */}
+              <div className="flex justify-between items-end mt-12 font-sans pt-4 border-t border-slate-100">
+                <div className="text-center w-40">
+                  <p className="text-[10px] text-slate-400">Petugas Penerima,</p>
+                  <div className="h-12 flex items-center justify-center">
+                    <span className="font-serif italic text-slate-400 text-xs">Paraf Elektronik</span>
+                  </div>
+                  <p className="font-bold text-slate-800 text-[10px] border-t border-slate-300 pt-1">Syafira Amalia</p>
+                </div>
+
+                {/* Simulated barcode */}
+                <div className="flex flex-col items-center">
+                  <div className="flex gap-[1px] items-center h-8 bg-slate-900 p-1 w-24">
+                    <div className="bg-white w-[1px] h-full"></div>
+                    <div className="bg-white w-[3px] h-full"></div>
+                    <div className="bg-white w-[1px] h-full"></div>
+                    <div className="bg-white w-[2px] h-full"></div>
+                    <div className="bg-white w-[4px] h-full"></div>
+                    <div className="bg-white w-[1px] h-full"></div>
+                    <div className="bg-white w-[2px] h-full"></div>
+                    <div className="bg-white w-[1px] h-full"></div>
+                    <div className="bg-white w-[3px] h-full"></div>
+                  </div>
+                  <span className="text-[8px] font-mono text-slate-500 mt-1">{selectedActionItem.no_surat}</span>
+                </div>
+
+                <div className="text-center w-40">
+                  <p className="text-[10px] text-slate-400">Kepala Bagian Tata Usaha,</p>
+                  <div className="h-12 flex items-center justify-center">
+                    <span className="text-indigo-600/70 font-serif font-extrabold italic border border-indigo-600/30 px-2 py-0.5 rounded text-[9px] uppercase tracking-wider rotate-2">TERVERTIFIKASI</span>
+                  </div>
+                  <p className="font-bold text-slate-800 text-[10px] border-t border-slate-300 pt-1">Budi Santoso, S.Kom</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
+            <span className="text-xs text-slate-500">Gunakan printer standard atau simpan ke PDF.</span>
+            <div className="flex gap-2">
+              <button onClick={() => setIsPrintOpen(false)} className="px-4 py-2 rounded text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors bg-white border border-slate-200">Tutup</button>
+              <button onClick={() => {
+                alert("Membuka dialog pencetakan sistem...");
+                window.print();
+              }} className="px-4 py-2 rounded text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-sm flex items-center gap-1.5">
+                <Printer className="w-4 h-4" />
+                Cetak Sekarang
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    )}
+
+    {/* Preview File / Digital Document Viewer Overlay Modal */}
+    {isPreviewOpen && selectedActionItem && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="bg-slate-950 rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col h-[85vh] text-slate-200 border border-slate-800">
+          {/* Viewer Topbar */}
+          <div className="flex justify-between items-center p-4 border-b border-slate-800 bg-slate-900">
+            <div className="flex items-center gap-3">
+              <div className="bg-indigo-500/15 p-2 rounded-lg text-indigo-400">
+                <FileText className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm text-white">{selectedActionItem.file_name || `${selectedActionItem.no_surat.replace(/\//g, "_")}_doc.pdf`}</h3>
+                <p className="text-[10px] text-slate-400 font-mono mt-0.5">PDF Document • 1.4 MB • Terverifikasi Elektronik</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={() => {
+                alert(`Mengunduh berkas ${selectedActionItem.file_name || "dokumen.pdf"}...`);
+              }} className="px-3 py-1.5 border border-slate-700 hover:border-slate-600 rounded-lg text-xs font-bold text-slate-300 hover:text-white transition-colors bg-slate-800/50">
+                Unduh Berkas
+              </button>
+              <button onClick={() => setIsPreviewOpen(false)} className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Viewer Workspace */}
+          <div className="flex-1 overflow-hidden flex">
+            {/* Left Sidebar: Document Attributes */}
+            <div className="w-80 border-r border-slate-800 bg-slate-900 p-5 overflow-y-auto space-y-6 hidden md:block">
+              <div>
+                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Informasi Surat</h4>
+                <div className="space-y-3 text-xs">
+                  <div className="bg-slate-950 p-3 rounded-lg border border-slate-800/80">
+                    <span className="text-[10px] text-slate-500 block uppercase font-bold">Nomor Surat</span>
+                    <span className="text-white font-mono font-bold mt-1 block">{selectedActionItem.no_surat}</span>
+                  </div>
+                  <div className="bg-slate-950 p-3 rounded-lg border border-slate-800/80">
+                    <span className="text-[10px] text-slate-500 block uppercase font-bold">Asal / Pengirim</span>
+                    <span className="text-white font-medium mt-1 block">{selectedActionItem.pengirim || "Dinas Kesehatan / RSUD"}</span>
+                  </div>
+                  <div className="bg-slate-950 p-3 rounded-lg border border-slate-800/80">
+                    <span className="text-[10px] text-slate-500 block uppercase font-bold">Tanggal Surat</span>
+                    <span className="text-white font-medium mt-1 block">{selectedActionItem.tanggal}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Isi Ringkas / Perihal</h4>
+                <p className="text-xs text-slate-300 leading-relaxed bg-slate-950 p-3 rounded-lg border border-slate-800/80 italic">
+                  &ldquo;{selectedActionItem.perihal || selectedActionItem.instruksi || "Koordinasi dan tindak lanjut laporan berkas masuk dari instansi pengirim."}&rdquo;
+                </p>
+              </div>
+
+              <div className="pt-2">
+                <button onClick={() => {
+                  setIsPreviewOpen(false);
+                  setIsPrintOpen(true);
+                }} className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition-colors shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-1.5">
+                  <Printer className="w-4 h-4" />
+                  Cetak Lembar Disposisi
+                </button>
+              </div>
+            </div>
+
+            {/* Right Panel: Simulated PDF Content Sheet */}
+            <div className="flex-1 bg-slate-900 overflow-y-auto p-6 md:p-12 flex justify-center items-start scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
+              <div className="bg-white text-slate-900 w-[100%] max-w-[21cm] min-h-[29.7cm] p-12 md:p-16 rounded-xl shadow-2xl relative font-serif text-sm border border-slate-200/80 overflow-hidden transform hover:scale-[1.005] transition-transform duration-300">
+                
+                {/* Official Stamp Watermark in the background */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] select-none pointer-events-none rotate-12">
+                  <div className="border-[12px] border-indigo-900 text-indigo-900 rounded-full w-96 h-96 flex flex-col items-center justify-center p-8 text-center">
+                    <span className="text-4xl font-extrabold uppercase tracking-widest">RSUD KELAS A</span>
+                    <span className="text-xl font-bold uppercase mt-2">BHAKTI HUSADA</span>
+                    <span className="text-sm font-mono mt-4">TERVERIFIKASI DIGITAL</span>
+                  </div>
+                </div>
+
+                {/* Sender Kop */}
+                <div className="text-center pb-6 border-b border-slate-300 mb-8 font-sans">
+                  <div className="flex items-center justify-center gap-3 mb-2">
+                    <Building2 className="w-8 h-8 text-indigo-600" />
+                    <div className="text-left">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800">{selectedActionItem.pengirim ? selectedActionItem.pengirim.toUpperCase() : "INSTANSI PEMERINTAH / KEMENTERIAN TATA USAHA"}</h4>
+                      <p className="text-[9px] text-slate-500 font-medium">Sekretariat Jenderal Kepegawaian & Sumber Daya Manusia</p>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-slate-400 italic">Alamat Resmi Instansi Pengirim • Telp: (021) 6789-0123 • info@pengirim-instansi.go.id</p>
+                </div>
+
+                {/* Letter Header Info */}
+                <div className="space-y-1 mb-8 font-sans text-xs text-slate-700">
+                  <div className="flex"><span className="w-24 font-bold">Nomor Surat :</span><span>{selectedActionItem.no_surat}</span></div>
+                  <div className="flex"><span className="w-24 font-bold">Sifat :</span><span className="font-semibold text-red-600">Penting / Segera</span></div>
+                  <div className="flex"><span className="w-24 font-bold">Lampiran :</span><span>1 (Satu) Berkas Lengkap</span></div>
+                  <div className="flex"><span className="w-24 font-bold">Perihal :</span><span className="font-semibold text-slate-900">{selectedActionItem.perihal || "Surat Edaran Koordinasi & Tindak Lanjut Layanan"}</span></div>
+                  <div className="flex justify-end mt-2"><span className="font-medium text-slate-600">Kota Damai, {selectedActionItem.tanggal}</span></div>
+                </div>
+
+                {/* Letter Body Content */}
+                <div className="space-y-4 text-xs md:text-sm leading-relaxed text-slate-800">
+                  <p>Kepada Yth,</p>
+                  <p className="font-bold font-sans text-slate-950">Kepala RSUD Kelas A Bhakti Husada<br />u.b. Kepala Sub Bagian Umum & Kepegawaian<br />Di Tempat</p>
+                  
+                  <p className="pt-2">Dengan hormat,</p>
+                  <p>
+                    Sehubungan dengan surat edaran resmi ini, kami dari <span className="font-bold">{selectedActionItem.pengirim || "Dinas Kesehatan"}</span> menyampaikan pemberitahuan perihal <span className="font-semibold text-slate-900">&ldquo;{selectedActionItem.perihal || selectedActionItem.instruksi || "Tindak Lanjut Koordinasi Daerah"}&rdquo;</span>. Hal ini dimaksudkan untuk mempercepat integrasi, kepatuhan administrasi, serta pelaporan berkala dalam semester ini.
+                  </p>
+                  <p>
+                    Adapun detail, teknis, serta dokumen petunjuk operasional terlampir bersama dengan surat ini. Kami mengharapkan perwakilan delegasi atau laporan tindak lanjut dapat diserahkan selambat-lambatnya 7 (tujuh) hari kerja setelah diterimanya surat edaran resmi ini.
+                  </p>
+                  <p>
+                    Demikian surat pemberitahuan ini kami sampaikan. Atas perhatian, kerjasama yang sinergis, serta tindak lanjut yang diberikan, kami ucapkan terima kasih yang sebesar-besarnya.
+                  </p>
+                </div>
+
+                {/* Signing block */}
+                <div className="mt-12 flex justify-end font-sans">
+                  <div className="text-center w-64 text-xs space-y-1 text-slate-700">
+                    <p>Hormat Kami,</p>
+                    <p className="font-bold uppercase tracking-wider text-slate-900">Kepala Bidang Administrasi</p>
+                    
+                    {/* Simulated digital signature and stamp */}
+                    <div className="h-16 flex items-center justify-center relative">
+                      {/* Blue ink stamp */}
+                      <div className="absolute border-2 border-indigo-500/40 text-indigo-500/50 rounded-full w-14 h-14 flex items-center justify-center p-1 text-[8px] font-bold uppercase rotate-12 select-none">
+                        DITERIMA
+                      </div>
+                      <span className="font-serif italic text-slate-400 font-medium">Tanda Tangan Digital</span>
+                    </div>
+
+                    <p className="font-bold text-slate-900 border-t border-slate-200 pt-1">Prof. Dr. Ir. H. Achmad Fauzi, M.PH</p>
+                    <p className="text-[10px] text-slate-400 font-mono">NIP. 19710928 200112 1 002</p>
+                  </div>
+                </div>
+
+                {/* Barcode/Footer sticker */}
+                <div className="absolute bottom-6 left-6 right-6 flex justify-between items-center border-t border-slate-200 pt-4 font-sans text-[9px] text-slate-400">
+                  <span>Dokumen elektronik ini sah secara hukum perundang-undangan RI.</span>
+                  <span className="font-mono">{selectedActionItem.no_surat}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Viewer Footer */}
+          <div className="p-4 border-t border-slate-800 bg-slate-900 flex justify-between items-center text-xs text-slate-400">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Koneksi aman terenkripsi SSL 256-Bit</span>
+            </div>
+            <button onClick={() => setIsPreviewOpen(false)} className="px-4 py-2 rounded-lg text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 transition-colors">
+              Selesai Membaca
+            </button>
           </div>
         </motion.div>
       </div>
