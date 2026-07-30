@@ -1671,93 +1671,75 @@ const GenericTable = ({
             {/* The Print Paper Sheet */}
             <div className="bg-white w-[100%] max-w-[21cm] p-8 border border-slate-200 rounded shadow-md text-slate-800 text-xs font-serif leading-relaxed relative">
               {/* Kop Surat Header */}
-              <div className="text-center border-b-2 border-double border-slate-800 pb-4 mb-6">
-                <h4 className="text-sm font-bold tracking-widest uppercase">Pemerintah Kabupaten Sehat Sejahtera</h4>
-                <h3 className="text-base font-extrabold uppercase mt-0.5">RSUD KELAS A BHAKTI HUSADA</h3>
+              <div className="text-center border-b-[3px] border-double border-slate-800 pb-4 mb-4">
+                <h4 className="text-sm font-bold tracking-widest uppercase text-slate-800">Pemerintah Kabupaten Sehat Sejahtera</h4>
+                <h3 className="text-base font-extrabold uppercase mt-0.5 text-slate-900">RSUD KELAS A BHAKTI HUSADA</h3>
                 <p className="text-[10px] font-sans text-slate-500 mt-1 italic">Jl. Kesehatan No. 12, Kota Damai • Telp (021) 555-0192 • Email: info@rsudbhaktihusada.go.id</p>
               </div>
 
               {/* Title */}
-              <div className="text-center mb-6">
-                <h2 className="text-sm font-bold uppercase underline tracking-wide">LEMBAR DISPOSISI & PENERIMAAN SURAT</h2>
-                <p className="text-[10px] font-mono text-slate-500 mt-0.5">Sistem Tata Usaha & Kepegawaian Digital</p>
+              <div className="text-center mb-6 border-b border-slate-300 pb-4">
+                <h2 className="text-lg font-bold uppercase tracking-widest text-slate-900">LEMBAR DISPOSISI</h2>
               </div>
 
               {/* Letter details */}
-              <div className="grid grid-cols-2 gap-4 mb-6 font-sans">
-                <div className="space-y-1.5">
-                  <div className="flex"><span className="w-24 text-slate-500 font-medium">No. Surat:</span><span className="font-bold text-slate-900">{selectedActionItem.no_surat}</span></div>
-                  <div className="flex"><span className="w-24 text-slate-500 font-medium">Tanggal:</span><span className="text-slate-900">{selectedActionItem.tanggal}</span></div>
-                  <div className="flex"><span className="w-24 text-slate-500 font-medium">Pengirim:</span><span className="text-slate-900 font-medium">{selectedActionItem.pengirim || "RSUD Bhakti Husada"}</span></div>
+              <div className="mb-6 font-sans text-xs space-y-3">
+                <div className="flex"><span className="w-40 text-slate-700 font-bold">Surat dari</span><span className="mr-2">:</span><span className="flex-1 border-b border-dotted border-slate-400 font-semibold">{selectedActionItem.pengirim || "..................................................."}</span></div>
+                <div className="flex"><span className="w-40 text-slate-700 font-bold">Nomor Surat</span><span className="mr-2">:</span><span className="flex-1 border-b border-dotted border-slate-400 font-semibold">{selectedActionItem.no_surat || "..................................................."}</span></div>
+                <div className="flex"><span className="w-40 text-slate-700 font-bold">Tanggal Surat</span><span className="mr-2">:</span><span className="flex-1 border-b border-dotted border-slate-400">{selectedActionItem.tanggal || "..................................................."}</span></div>
+                <div className="flex"><span className="w-40 text-slate-700 font-bold">Tanggal Diterima</span><span className="mr-2">:</span><span className="flex-1 border-b border-dotted border-slate-400">...................................................</span></div>
+                <div className="flex"><span className="w-40 text-slate-700 font-bold">No. Agenda/Registrasi</span><span className="mr-2">:</span><span className="flex-1 border-b border-dotted border-slate-400">...................................................</span></div>
+                <div className="flex items-center"><span className="w-40 text-slate-700 font-bold">Sifat</span><span className="mr-2">:</span>
+                  <div className="flex gap-4 flex-1">
+                    <span className="flex items-center gap-1"><div className="w-3 h-3 border border-slate-400 rounded-sm"></div> Sangat Segera</span>
+                    <span className="flex items-center gap-1"><div className="w-3 h-3 border border-slate-400 rounded-sm"></div> Segera</span>
+                    <span className="flex items-center gap-1"><div className="w-3 h-3 border border-slate-400 rounded-sm"></div> Biasa</span>
+                    <span className="flex items-center gap-1"><div className="w-3 h-3 border border-slate-400 rounded-sm"></div> Rahasia</span>
+                  </div>
                 </div>
-                <div className="space-y-1.5 border-l border-slate-200 pl-4">
-                  <div className="flex"><span className="w-24 text-slate-500 font-medium">Penerima/Tujuan:</span><span className="text-slate-900 font-medium">{selectedActionItem.penerima || "Sub Bagian Kepegawaian"}</span></div>
-                  <div className="flex"><span className="w-24 text-slate-500 font-medium">Status Surat:</span><span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold inline-block">{selectedActionItem.status || "Didisposisikan"}</span></div>
-                  <div className="flex"><span className="w-24 text-slate-500 font-medium">Berkas Surat:</span><span className="text-slate-900 italic font-medium">{selectedActionItem.file_name || "Tanpa Berkas"}</span></div>
-                </div>
-              </div>
-
-              <div className="border border-slate-300 p-4 rounded mb-6 font-sans bg-slate-50/50">
-                <h5 className="font-bold text-slate-700 uppercase text-[10px] tracking-wider mb-2 border-b border-slate-200 pb-1">Perihal / Instruksi Pimpinan:</h5>
-                <p className="text-xs text-slate-800 leading-relaxed italic">
-                  &ldquo;{selectedActionItem.perihal || selectedActionItem.instruksi || "Segera dipelajari, tindaklanjuti dan simpan sebagai arsip kepegawaian resmi."}&rdquo;
-                </p>
+                <div className="flex"><span className="w-40 text-slate-700 font-bold">Hal / Perihal</span><span className="mr-2">:</span><span className="flex-1 border-b border-dotted border-slate-400 italic">&ldquo;{selectedActionItem.perihal || "..................................................."}&rdquo;</span></div>
               </div>
 
               {/* Disposition table fields */}
-              <div className="border border-slate-300 rounded mb-8 font-sans overflow-hidden">
-                <div className="grid grid-cols-2 bg-slate-50 font-bold border-b border-slate-300 p-2 text-[10px] uppercase text-slate-500">
-                  <div>Diteruskan Kepada:</div>
-                  <div className="border-l border-slate-300 pl-2">Petunjuk/Instruksi khusus:</div>
+              <div className="border-t border-slate-300 pt-4 mb-6 font-sans text-xs">
+                <h5 className="font-bold text-slate-800 uppercase tracking-wide mb-3">Diteruskan Kepada Yth:</h5>
+                <div className="space-y-2 text-slate-700">
+                  <div className="flex"><span className="w-6">1.</span><span className="flex-1 border-b border-dotted border-slate-400">{selectedActionItem.penerima || "..................................................."}</span></div>
+                  <div className="flex"><span className="w-6">2.</span><span className="flex-1 border-b border-dotted border-slate-400">...................................................</span></div>
+                  <div className="flex"><span className="w-6">3.</span><span className="flex-1 border-b border-dotted border-slate-400">...................................................</span></div>
                 </div>
-                <div className="grid grid-cols-2 p-2 h-20 text-xs">
-                  <div className="space-y-1 text-[10px] text-slate-400">
-                    <div>[  ] Kepala Bidang Medis</div>
-                    <div>[  ] Kepala Sub Bagian Umum</div>
-                    <div>[  ] Koordinator Tata Usaha</div>
-                    <div>[✓] Staff Kepegawaian Operasional</div>
-                  </div>
-                  <div className="border-l border-slate-300 pl-2 text-[10px] text-slate-400">
-                    <div>[✓] Selesaikan dengan segera</div>
-                    <div>[  ] Siapkan draf balasan</div>
-                    <div>[  ] Koordinasikan dengan unit terkait</div>
-                    <div>[  ] Pertahankan arsip kepegawaian</div>
+              </div>
+
+              {/* Instructions */}
+              <div className="border-t border-slate-300 pt-4 mb-6 font-sans text-xs">
+                <h5 className="font-bold text-slate-800 uppercase tracking-wide mb-3">INSTRUKSI / PETUNJUK (Pimpinan):</h5>
+                <div className="grid grid-cols-2 gap-y-3 gap-x-8 mb-6">
+                  <span className="flex items-center gap-2"><div className="w-4 h-4 border border-slate-400 rounded-sm"></div> Tindak lanjuti / Tanggapi</span>
+                  <span className="flex items-center gap-2"><div className="w-4 h-4 border border-slate-400 rounded-sm"></div> Hadiri / Wakili</span>
+                  <span className="flex items-center gap-2"><div className="w-4 h-4 border border-slate-400 rounded-sm"></div> Proses sesuai ketentuan</span>
+                  <span className="flex items-center gap-2"><div className="w-4 h-4 border border-slate-400 rounded-sm"></div> Selesaikan</span>
+                  <span className="flex items-center gap-2"><div className="w-4 h-4 border border-slate-400 rounded-sm"></div> Pelajari / Telaah</span>
+                  <span className="flex items-center gap-2"><div className="w-4 h-4 border border-slate-400 rounded-sm"></div> Simpan / Arsipkan</span>
+                  <span className="flex items-center gap-2"><div className="w-4 h-4 border border-slate-400 rounded-sm"></div> Koordinasikan dengan ___________</span>
+                  <span className="flex items-center gap-2"><div className="w-4 h-4 border border-slate-400 rounded-sm"></div> Untuk diketahui / Laporkan</span>
+                </div>
+                
+                <div>
+                  <h5 className="font-bold text-slate-800 tracking-wide mb-2">Catatan Tambahan Pimpinan:</h5>
+                  <div className="space-y-4">
+                    <div className="border-b border-dotted border-slate-400 w-full h-4"></div>
+                    <div className="border-b border-dotted border-slate-400 w-full h-4"></div>
+                    <div className="border-b border-dotted border-slate-400 w-full h-4"></div>
                   </div>
                 </div>
               </div>
 
               {/* Signatures */}
-              <div className="flex justify-between items-end mt-12 font-sans pt-4 border-t border-slate-100">
-                <div className="text-center w-40">
-                  <p className="text-[10px] text-slate-400">Petugas Penerima,</p>
-                  <div className="h-12 flex items-center justify-center">
-                    <span className="font-serif italic text-slate-400 text-xs">Paraf Elektronik</span>
-                  </div>
-                  <p className="font-bold text-slate-800 text-[10px] border-t border-slate-300 pt-1">Syafira Amalia</p>
-                </div>
-
-                {/* Simulated barcode */}
-                <div className="flex flex-col items-center">
-                  <div className="flex gap-[1px] items-center h-8 bg-slate-900 p-1 w-24">
-                    <div className="bg-white w-[1px] h-full"></div>
-                    <div className="bg-white w-[3px] h-full"></div>
-                    <div className="bg-white w-[1px] h-full"></div>
-                    <div className="bg-white w-[2px] h-full"></div>
-                    <div className="bg-white w-[4px] h-full"></div>
-                    <div className="bg-white w-[1px] h-full"></div>
-                    <div className="bg-white w-[2px] h-full"></div>
-                    <div className="bg-white w-[1px] h-full"></div>
-                    <div className="bg-white w-[3px] h-full"></div>
-                  </div>
-                  <span className="text-[8px] font-mono text-slate-500 mt-1">{selectedActionItem.no_surat}</span>
-                </div>
-
-                <div className="text-center w-40">
-                  <p className="text-[10px] text-slate-400">Kepala Bagian Tata Usaha,</p>
-                  <div className="h-12 flex items-center justify-center">
-                    <span className="text-indigo-600/70 font-serif font-extrabold italic border border-indigo-600/30 px-2 py-0.5 rounded text-[9px] uppercase tracking-wider rotate-2">TERVERTIFIKASI</span>
-                  </div>
-                  <p className="font-bold text-slate-800 text-[10px] border-t border-slate-300 pt-1">Budi Santoso, S.Kom</p>
+              <div className="flex justify-end mt-12 font-sans text-xs">
+                <div className="text-center w-56">
+                  <p className="text-slate-700">[Kota, Tanggal Disposisi]</p>
+                  <p className="text-slate-700 font-bold mb-16">Jabatan Pimpinan,</p>
+                  <p className="font-bold text-slate-800 border-t border-slate-400 pt-1">(Nama Lengkap & Tanda Tangan)</p>
                 </div>
               </div>
             </div>
@@ -9116,6 +9098,7 @@ export default function App() {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [themeSearch, setThemeSearch] = useState("");
@@ -11369,28 +11352,32 @@ export default function App() {
 
       {/* Sidebar Desktop */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white/70 backdrop-blur-xl border-r border-white/50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transform transition-transform duration-300 lg:translate-x-0 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"} lg:static lg:block flex flex-col shrink-0 h-screen`}
+        className={`fixed inset-y-0 left-0 z-50 ${isSidebarCollapsed ? "w-20" : "w-64"} bg-white/70 backdrop-blur-xl border-r border-white/50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transform transition-all duration-300 lg:translate-x-0 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"} lg:static lg:block flex flex-col shrink-0 h-screen overflow-hidden`}
       >
-        <div className="p-6 border-b border-slate-200/50 flex items-center justify-between">
+        <div className={`p-6 border-b border-slate-200/50 flex items-center ${isSidebarCollapsed ? "justify-center" : "justify-between"}`}>
           <div className="flex items-center gap-3">
-            <div className={`w-8 h-8 ${activeColors.primary} rounded flex items-center justify-center text-white font-bold text-lg shadow-sm`}>
+            <div className={`w-8 h-8 shrink-0 ${activeColors.primary} rounded flex items-center justify-center text-white font-bold text-lg shadow-sm`}>
               TU
             </div>
-            <span className="font-bold text-slate-900 tracking-tight drop-shadow-sm">
-              SIM-TATA USAHA
-            </span>
+            {!isSidebarCollapsed && (
+              <span className="font-bold text-slate-900 tracking-tight drop-shadow-sm whitespace-nowrap">
+                SIM-TATA USAHA
+              </span>
+            )}
           </div>
-          <button
-            className="lg:hidden text-slate-500"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <X className="w-6 h-6" />
-          </button>
+          {!isSidebarCollapsed && (
+            <button
+              className="lg:hidden text-slate-500 shrink-0"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <X className="w-6 h-6" />
+            </button>
+          )}
         </div>
 
         <nav className="flex-1 py-4 overflow-y-auto space-y-1 no-scrollbar">
-          <p className="px-6 py-2 text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-2">
-            Menu Utama
+          <p className={`px-6 py-2 text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-2 ${isSidebarCollapsed ? "text-center px-0" : ""}`}>
+            {isSidebarCollapsed ? "Menu" : "Menu Utama"}
           </p>
           {MENU_ITEMS.map((item) => (
             <button
@@ -11399,43 +11386,61 @@ export default function App() {
                 setActiveTab(item.id);
                 setIsMobileMenuOpen(false);
               }}
-              className={`w-full flex items-center gap-3 px-6 py-2.5 text-sm font-medium transition-all ${
+              title={isSidebarCollapsed ? item.label : undefined}
+              className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center px-0" : "gap-3 px-6"} py-2.5 text-sm font-medium transition-all ${
                 activeTab === item.id
-                  ? `${activeColors.bgLight} ${activeColors.text} border-r-4 ${activeColors.border}`
+                  ? `${activeColors.bgLight} ${activeColors.text} ${isSidebarCollapsed ? "" : "border-r-4"} ${activeColors.border}`
                   : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
               }`}
             >
               <item.icon
-                className={`w-4 h-4 transition-colors ${activeTab === item.id ? activeColors.textLight : "text-slate-400"}`}
+                className={`w-5 h-5 shrink-0 transition-colors ${activeTab === item.id ? activeColors.textLight : "text-slate-400"}`}
               />
-              {item.label}
+              {!isSidebarCollapsed && (
+                <span className="whitespace-nowrap">{item.label}</span>
+              )}
             </button>
           ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-200/50 bg-white/50">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-slate-300 shrink-0 overflow-hidden shadow-inner">
+        <div className={`p-4 border-t border-slate-200/50 bg-white/50 ${isSidebarCollapsed ? "flex justify-center" : ""}`}>
+          <div className={`flex items-center ${isSidebarCollapsed ? "justify-center" : "gap-3"} mb-4`}>
+            <div className="w-10 h-10 rounded-full bg-slate-300 shrink-0 overflow-hidden shadow-inner cursor-pointer" title={isSidebarCollapsed ? "Admin Utama (Super Admin)" : undefined}>
               <img
                 src="https://api.dicebear.com/7.x/notionists/svg?seed=Admin&backgroundColor=f1f5f9"
                 alt="Admin"
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="overflow-hidden flex-1">
-              <p className="text-xs font-bold text-slate-900 truncate drop-shadow-sm">
-                Admin Utama
-              </p>
-              <p className="text-[10px] text-slate-500">Super Admin</p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="text-slate-400 hover:text-rose-600 p-1.5 hover:bg-rose-50 rounded-lg transition-colors"
-              title="Keluar"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+            {!isSidebarCollapsed && (
+              <div className="overflow-hidden flex-1">
+                <p className="text-xs font-bold text-slate-900 truncate drop-shadow-sm">
+                  Admin Utama
+                </p>
+                <p className="text-[10px] text-slate-500">Super Admin</p>
+              </div>
+            )}
+            {!isSidebarCollapsed && (
+              <button
+                onClick={handleLogout}
+                className="text-slate-400 hover:text-rose-600 p-1.5 hover:bg-rose-50 rounded-lg transition-colors shrink-0"
+                title="Keluar"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
           </div>
+          {isSidebarCollapsed && (
+            <div className="flex justify-center">
+              <button
+                onClick={handleLogout}
+                className="text-slate-400 hover:text-rose-600 p-1.5 hover:bg-rose-50 rounded-lg transition-colors"
+                title="Keluar"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
+          )}
         </div>
       </aside>
 
@@ -11449,6 +11454,13 @@ export default function App() {
               onClick={() => setIsMobileMenuOpen(true)}
             >
               <Menu className="w-6 h-6" />
+            </button>
+            <button
+              className="hidden lg:block p-2 -ml-2 mr-4 text-slate-500 hover:bg-slate-100 hover:text-slate-700 rounded-lg transition-colors"
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              title={isSidebarCollapsed ? "Perluas Sidebar" : "Perkecil Sidebar"}
+            >
+              <Menu className="w-5 h-5" />
             </button>
             <h2 className="text-lg font-bold text-slate-800 hidden sm:block drop-shadow-sm">
               {MENU_ITEMS.find((m) => m.id === activeTab)?.label}
